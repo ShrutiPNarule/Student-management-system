@@ -22,13 +22,12 @@ def logs():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT log_id, user_email, role_name, action, details, created_at
-        FROM activity_logs
+        SELECT id, user_id, action, entity_type, entity_id, metadata, created_at
+        FROM activity_log
         ORDER BY created_at DESC;
     """)
 
     logs = cur.fetchall()
     cur.close()
-    conn.close()
 
     return render_template("logs.html", logs=logs)

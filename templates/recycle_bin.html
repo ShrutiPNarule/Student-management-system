@@ -2,7 +2,7 @@
 
 {% block content %}
 
-{% if session.get("role") != "AUDITOR" %}
+{% if session.get("role") != "auditor" %}
     <h3 style="color:red;">Unauthorized Access</h3>
     <p>You do not have permission to view deleted student records.</p>
     <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>

@@ -7,7 +7,7 @@ from flask import session, redirect, url_for, flash
 def require_roles(*allowed_roles):
     """
     Usage:
-    @require_roles("ADMIN", "SUPER_ADMIN")
+    @require_roles("admin", "auditor")
     def function():
         ...
     """

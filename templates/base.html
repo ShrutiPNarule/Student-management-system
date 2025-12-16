@@ -17,12 +17,12 @@
         {% endif %}
 
         <!-- ADMIN: Add Student -->
-        {% if session.get("role") == "ADMIN" %}
+        {% if session.get("role") == "admin" %}
             <li><a href="{{ url_for('add_student') }}">Add Student</a></li>
         {% endif %}
 
         <!-- AUDITOR: Recycle Bin + Logs -->
-        {% if session.get("role") == "AUDITOR" %}
+        {% if session.get("role") == "auditor" %}
             <li><a href="{{ url_for('recycle_bin') }}">Recycle Bin</a></li>
             <li><a href="{{ url_for('logs') }}">Activity Logs</a></li>
         {% endif %}

@@ -47,78 +47,38 @@ def login():
 
         # ---------------- FETCH USER ----------------
         cur.execute("""
-            SELECT u.user_id, u.email, u.password, u.failed_attempts,
-                   u.lock_until, r.role_name
-            FROM users u
-            JOIN roles r ON u.role_id = r.role_id
+            SELECT u.id, u.email, u.password, r.name
+            FROM users_master u
+            LEFT JOIN roles_master r ON u.role_id = r.id
             WHERE u.email = %s
         """, (email,))
 
         row = cur.fetchone()
 
         if not row:
-            cur.close()
-            conn.close()
             flash("Invalid email or password.", "error")
             return render_template("login.html")
 
-        user_id, user_email, stored_hash, failed_attempts, lock_until, user_role = row
-
-        # ---------------- LOCKOUT CHECK ----------------
-        if lock_until and datetime.utcnow() < lock_until:
-            flash("Account locked. Try again later.", "error")
-            cur.close()
-            conn.close()
-            return render_template("login.html")
+        user_id, user_email, stored_hash, user_role = row
 
         if isinstance(stored_hash, (bytes, memoryview)):
             stored_hash = stored_hash.tobytes().decode()
 
         # ---------------- PASSWORD CHECK ----------------
         if not check_password_hash(stored_hash, password):
-
-            failed_attempts += 1
-            lock_time = None
-
-            if failed_attempts >= MAX_FAILED_ATTEMPTS:
-                lock_time = datetime.utcnow() + timedelta(minutes=LOCKOUT_MINUTES)
-
-            cur.execute("""
-                UPDATE users
-                SET failed_attempts = %s,
-                    lock_until = %s
-                WHERE user_id = %s
-            """, (failed_attempts, lock_time, user_id))
-
-            conn.commit()
-            cur.close()
-            conn.close()
-
             flash("Invalid email or password.", "error")
             return render_template("login.html")
-
-        # ---------------- RESET FAILED ATTEMPTS ----------------
-        cur.execute("""
-            UPDATE users
-            SET failed_attempts = 0,
-                lock_until = NULL
-            WHERE user_id = %s
-        """, (user_id,))
-        conn.commit()
 
         # ---------------- OTP GENERATION ----------------
         otp = random.randint(100000, 999999)
 
         session["pending_user_id"] = user_id
         session["pending_user_email"] = user_email
-        session["pending_user_role"] = user_role
+        session["pending_user_role"] = user_role.lower() if user_role else "student"
         session["login_otp"] = str(otp)
         session["otp_expires_at"] = (
             datetime.utcnow() + timedelta(minutes=5)
         ).isoformat()
-
-        cur.close()
-        conn.close()
 
         try:
             send_otp_email(user_email, otp)

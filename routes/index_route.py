@@ -18,7 +18,7 @@ def index():
     conn = get_connection()
     cur = conn.cursor()
 
-    if role == "GENERAL":
+    if role == "student":
         cur.execute("""
             SELECT 
                 s.id, s.name, s.roll_no, s.college, s.phone, s.email,
@@ -29,7 +29,7 @@ def index():
             ORDER BY s.id;
         """, (user_email,))
 
-    elif role in ("ADMIN", "AUDITOR"):
+    elif role in ("admin", "auditor"):
         cur.execute("""
             SELECT 
                 s.id, s.name, s.roll_no, s.college, s.phone, s.email,
@@ -42,11 +42,9 @@ def index():
 
     else:
         cur.close()
-        conn.close()
         abort(403)
 
     students = cur.fetchall()
     cur.close()
-    conn.close()
 
     return render_template("index.html", students=students)

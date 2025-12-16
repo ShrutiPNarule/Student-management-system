@@ -35,44 +35,53 @@ cur.execute("CREATE SEQUENCE IF NOT EXISTS activity_seq START 1;")
 
 # ---- ROLES ----
 cur.execute("""
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS roles_master (
     id TEXT PRIMARY KEY DEFAULT
         'RL' || LPAD(nextval('role_seq')::TEXT, 4, '0'),
-    name TEXT UNIQUE NOT NULL
+    name TEXT UNIQUE NOT NULL,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
 # ---- USERS ----
 cur.execute("""
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS users_master (
     id TEXT PRIMARY KEY DEFAULT
         'US' || LPAD(nextval('user_seq')::TEXT, 6, '0'),
-    name TEXT NOT NULL,
+    name TEXT,
     email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
     phone VARCHAR(15),
-    role_id TEXT REFERENCES roles(id) ON DELETE SET NULL,
+    role_id TEXT REFERENCES roles_master(id) ON DELETE SET NULL,
     dob DATE,
     address TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
 # ---- SCHOOLS ----
 cur.execute("""
-CREATE TABLE IF NOT EXISTS schools (
+CREATE TABLE IF NOT EXISTS schools_master (
     id TEXT PRIMARY KEY DEFAULT
         'SC' || LPAD(nextval('school_seq')::TEXT, 5, '0'),
     name TEXT NOT NULL,
     address TEXT,
     district TEXT,
     state TEXT,
-    board TEXT
+    board TEXT,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
 # ---- COLLEGES ----
 cur.execute("""
-CREATE TABLE IF NOT EXISTS colleges (
+CREATE TABLE IF NOT EXISTS colleges_master (
     id TEXT PRIMARY KEY DEFAULT
         'CL' || LPAD(nextval('college_seq')::TEXT, 5, '0'),
     aicte_id TEXT UNIQUE,
@@ -82,18 +91,61 @@ CREATE TABLE IF NOT EXISTS colleges (
     state TEXT,
     institute_type TEXT,
     is_women BOOLEAN DEFAULT FALSE,
-    is_minority BOOLEAN DEFAULT FALSE
+    is_minority BOOLEAN DEFAULT FALSE,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
 # ---- SUBJECTS ----
 cur.execute("""
-CREATE TABLE IF NOT EXISTS subjects (
+CREATE TABLE IF NOT EXISTS subjects_master (
     id TEXT PRIMARY KEY DEFAULT
         'SB' || LPAD(nextval('subject_seq')::TEXT, 5, '0'),
     name TEXT NOT NULL,
     credits INTEGER,
-    semester INTEGER
+    semester INTEGER,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# =========================
+# STUDENT MANAGEMENT TABLES
+# =========================
+
+# ---- STUDENTS MASTER ----
+cur.execute("""
+CREATE TABLE IF NOT EXISTS students_master (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    roll_no VARCHAR(20) UNIQUE NOT NULL,
+    college VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    is_deleted BOOLEAN DEFAULT FALSE,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# ---- STUDENT MARKS ----
+cur.execute("""
+CREATE TABLE IF NOT EXISTS student_marks (
+    id SERIAL PRIMARY KEY,
+    student_id INT NOT NULL REFERENCES students_master(id) ON DELETE CASCADE,
+    marks_10th INT,
+    marks_12th INT,
+    marks1 INT,
+    marks2 INT,
+    marks3 INT,
+    marks4 INT,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
@@ -104,12 +156,13 @@ cur.execute("""
 CREATE TABLE IF NOT EXISTS activity_log (
     id TEXT PRIMARY KEY DEFAULT
         'AL' || LPAD(nextval('activity_seq')::TEXT, 6, '0'),
-    user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+    user_id TEXT REFERENCES users_master(id) ON DELETE SET NULL,
     action TEXT NOT NULL,
     entity_type TEXT,
     entity_id TEXT,
     metadata JSONB,
     ip_address TEXT,
+    status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)

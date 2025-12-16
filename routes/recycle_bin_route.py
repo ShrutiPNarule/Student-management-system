@@ -36,6 +36,5 @@ def recycle_bin():
 
     deleted_students = cur.fetchall()
     cur.close()
-    conn.close()
 
     return render_template("recycle_bin.html", deleted_students=deleted_students)

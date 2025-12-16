@@ -3,6 +3,7 @@ from app import app
 from db import get_connection
 import psycopg2
 import re
+from routes.log_utils import log_action
 
 
 EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
@@ -107,6 +108,10 @@ def update_student_data(student_id):
             ))
 
             conn.commit()
+            
+            # Log the action
+            log_action("UPDATE", "STUDENT", str(student_id), {"name": name, "email": email})
+            
             flash("Student updated successfully!", "success")
 
         except psycopg2.Error:
@@ -115,7 +120,6 @@ def update_student_data(student_id):
 
         finally:
             cur.close()
-            conn.close()
 
         return redirect(url_for("index"))
 
@@ -132,7 +136,6 @@ def update_student_data(student_id):
 
     student = cur.fetchone()
     cur.close()
-    conn.close()
 
     if not student:
         flash("Student not found or record is deleted!", "error")

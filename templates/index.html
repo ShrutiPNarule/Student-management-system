@@ -5,7 +5,7 @@
 <div class="section-header">
     <h2>Students</h2>
 
-    {% if session.get("role") == "ADMIN" %}
+    {% if session.get("role") == "admin" %}
         <a href="{{ url_for('add_student') }}" class="btn btn-success">
             + Add New Student
         </a>
@@ -30,7 +30,7 @@
             <th>Y3</th>
             <th>Y4</th>
 
-            {% if session.get("role") == "ADMIN" %}
+            {% if session.get("role") == "admin" %}
                 <th>Actions</th>
             {% endif %}
         </tr>
@@ -52,7 +52,7 @@
             <td>{{ s[10] }}</td>
             <td>{{ s[11] }}</td>
 
-            {% if session.get("role") == "ADMIN" %}
+            {% if session.get("role") == "admin" %}
             <td class="actions-cell">
                 <!-- Edit -->
                 <a href="{{ url_for('update_student_data', student_id=s[0]) }}"

@@ -3,6 +3,7 @@ from db import get_connection
 from app import app
 import psycopg2
 import re
+from routes.log_utils import log_action
 
 
 EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
@@ -98,6 +99,10 @@ def add_student():
             ))
 
             conn.commit()
+            
+            # Log the action
+            log_action("CREATE", "STUDENT", str(student_id), {"name": name, "email": email})
+            
             flash("New student added successfully!", "success")
 
         except psycopg2.Error:
@@ -106,7 +111,6 @@ def add_student():
 
         finally:
             cur.close()
-            conn.close()
 
         return redirect(url_for("index"))
 

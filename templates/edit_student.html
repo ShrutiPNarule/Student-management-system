@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-{% if session.get("role") != "ADMIN" %}
+{% if session.get("role") != "admin" %}
     <h3 style="color:red;">Unauthorized Access</h3>
     <p>You do not have permission to edit student records.</p>
     <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>

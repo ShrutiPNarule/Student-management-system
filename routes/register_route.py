@@ -49,25 +49,26 @@ def register():
             conn = get_connection()
             cur = conn.cursor()
 
-            # Get role_id for 'general'
+            # Get role_id for 'student'
             cur.execute(
-                "SELECT role_id FROM roles WHERE role_name = %s",
-                ("GENERAL",),
+                "SELECT id FROM roles_master WHERE name = %s",
+                ("student",),
             )
             row = cur.fetchone()
             if not row:
-                flash("Role 'general' not found in roles table.", "error")
+                flash("Role 'student' not found in roles table.", "error")
                 return render_template("register.html")
 
-            general_role_id = row[0]
+            student_role_id = row[0]
 
-            # Store hashed_password in DB with default role = general
+            # Store hashed_password in DB with default role = student
             cur.execute(
                 """
-                INSERT INTO users (email, password, role_id)
+                INSERT INTO users_master (email, password, role_id)
                 VALUES (%s, %s, %s)
+                RETURNING id;
                 """,
-                (email, hashed_password, general_role_id),
+                (email, hashed_password, student_role_id),
             )
             conn.commit()
 
@@ -85,8 +86,6 @@ def register():
         finally:
             if cur:
                 cur.close()
-            if conn:
-                conn.close()
 
     # GET
     return render_template("register.html")
