@@ -17,7 +17,7 @@ def delete_student_data(student_id):
         return redirect(url_for("login"))
 
     # Role check
-    if session.get("role") != "ADMIN":
+    if session.get("role") != "admin":
         abort(403)
 
     conn = get_connection()

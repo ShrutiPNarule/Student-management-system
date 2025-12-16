@@ -17,7 +17,7 @@ def update_student_data(student_id):
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "ADMIN":
+    if session.get("role") != "admin":
         abort(403)
 
     conn = get_connection()

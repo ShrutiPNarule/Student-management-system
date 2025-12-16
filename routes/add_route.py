@@ -17,7 +17,7 @@ def add_student():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "ADMIN":
+    if session.get("role") != "admin":
         abort(403)
 
     if request.method == "POST":

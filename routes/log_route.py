@@ -15,7 +15,7 @@ def logs():
         return redirect(url_for("login"))
 
     # Role check
-    if session.get("role") != "AUDITOR":
+    if session.get("role") != "auditor":
         abort(403)
 
     conn = get_connection()

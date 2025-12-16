@@ -5,33 +5,46 @@
 <div class="section-header">
     <h2>Students</h2>
 
-    {% if session.get("role") == "admin" %}
-        <a href="{{ url_for('add_student') }}" class="btn btn-success">
-            + Add New Student
-        </a>
-    {% endif %}
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <!-- Info Type Filter Dropdown -->
+        <div class="filter-group">
+            <label for="infoFilter">View:</label>
+            <select id="infoFilter" onchange="filterColumns(this.value)">
+                <option value="all">All Info</option>
+                <option value="personal">Personal Info</option>
+                <option value="school">School Marks</option>
+                <option value="college">College Marks</option>
+            </select>
+        </div>
+
+        {% if session.get("role") == "admin" %}
+            <a href="{{ url_for('add_student') }}" class="btn btn-success">
+                + Add New Student
+            </a>
+        {% endif %}
+    </div>
 </div>
 
 {% if students %}
 <div class="table-wrapper">
-<table>
+<table id="studentsTable">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Roll No</th>
-            <th>College</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>10th</th>
-            <th>12th</th>
-            <th>Y1</th>
-            <th>Y2</th>
-            <th>Y3</th>
-            <th>Y4</th>
+            <th class="col-always">ID</th>
+            <th class="col-always">Name</th>
+            <th class="col-personal">Roll No</th>
+            <th class="col-personal">College</th>
+            <th class="col-personal">Phone</th>
+            <th class="col-personal">Email</th>
+            <th class="col-school">10th</th>
+            <th class="col-school">12th</th>
+            <th class="col-college">Y1</th>
+            <th class="col-college">Y2</th>
+            <th class="col-college">Y3</th>
+            <th class="col-college">Y4</th>
 
             {% if session.get("role") == "admin" %}
-                <th>Actions</th>
+                <th class="col-always">Actions</th>
             {% endif %}
         </tr>
     </thead>
@@ -39,21 +52,21 @@
     <tbody>
         {% for s in students %}
         <tr>
-            <td>{{ s[0] }}</td>
-            <td>{{ s[1] }}</td>
-            <td>{{ s[2] }}</td>
-            <td>{{ s[3] }}</td>
-            <td>{{ s[4] }}</td>
-            <td>{{ s[5] }}</td>
-            <td>{{ s[6] }}</td>
-            <td>{{ s[7] }}</td>
-            <td>{{ s[8] }}</td>
-            <td>{{ s[9] }}</td>
-            <td>{{ s[10] }}</td>
-            <td>{{ s[11] }}</td>
+            <td class="col-always">{{ s[0] }}</td>
+            <td class="col-always">{{ s[1] }}</td>
+            <td class="col-personal">{{ s[2] }}</td>
+            <td class="col-personal">{{ s[3] }}</td>
+            <td class="col-personal">{{ s[4] }}</td>
+            <td class="col-personal">{{ s[5] }}</td>
+            <td class="col-school">{{ s[6] }}</td>
+            <td class="col-school">{{ s[7] }}</td>
+            <td class="col-college">{{ s[8] }}</td>
+            <td class="col-college">{{ s[9] }}</td>
+            <td class="col-college">{{ s[10] }}</td>
+            <td class="col-college">{{ s[11] }}</td>
 
             {% if session.get("role") == "admin" %}
-            <td class="actions-cell">
+            <td class="col-always actions-cell">
                 <!-- Edit -->
                 <a href="{{ url_for('update_student_data', student_id=s[0]) }}"
                    class="btn btn-secondary btn-sm">
@@ -79,5 +92,87 @@
 {% else %}
 <p>No student records found.</p>
 {% endif %}
+
+<script>
+function filterColumns(filterType) {
+    const table = document.getElementById('studentsTable');
+    const rows = table.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('th, td');
+        cells.forEach(cell => {
+            // Check if cell has the class using classList.contains()
+            const hasAlways = cell.classList.contains('col-always');
+            const hasPersonal = cell.classList.contains('col-personal');
+            const hasSchool = cell.classList.contains('col-school');
+            const hasCollege = cell.classList.contains('col-college');
+            
+            if (filterType === 'all') {
+                cell.style.display = '';
+            } else if (filterType === 'personal') {
+                if (hasAlways || hasPersonal) {
+                    cell.style.display = '';
+                } else {
+                    cell.style.display = 'none';
+                }
+            } else if (filterType === 'school') {
+                if (hasAlways || hasSchool) {
+                    cell.style.display = '';
+                } else {
+                    cell.style.display = 'none';
+                }
+            } else if (filterType === 'college') {
+                if (hasAlways || hasCollege) {
+                    cell.style.display = '';
+                } else {
+                    cell.style.display = 'none';
+                }
+            }
+        });
+    });
+}
+</script>
+
+<style>
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #c5cbe3;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #f4f6ff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.filter-group select:hover {
+    border-color: #0066cc;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+</style>
 
 {% endblock %}

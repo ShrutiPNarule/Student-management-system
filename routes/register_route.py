@@ -9,12 +9,29 @@ import re
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
+        name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
+        phone = request.form.get("phone", "").strip()
+        dob = request.form.get("dob", "").strip() or None
+        address = request.form.get("address", "").strip()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
-        if not email or not password:
-            flash("Email and password are required.", "error")
+        # ---------- BASIC VALIDATION ----------
+        if not email or not password or not name:
+            flash("Name, email, and password are required.", "error")
+            return render_template("register.html")
+
+        if not re.fullmatch(r"[A-Za-z\s]{2,}", name):
+            flash("Name must contain only letters.", "error")
+            return render_template("register.html")
+
+        if phone and (not phone.isdigit() or len(phone) != 10):
+            flash("Phone number must be exactly 10 digits.", "error")
+            return render_template("register.html")
+
+        if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+            flash("Enter a valid email address.", "error")
             return render_template("register.html")
 
         # Password strength checks
@@ -41,7 +58,6 @@ def register():
             method="pbkdf2:sha256",
             salt_length=16,
         )
-        print("REGISTER DEBUG hashed:", hashed_password)
 
         conn = None
         cur = None
@@ -61,14 +77,14 @@ def register():
 
             student_role_id = row[0]
 
-            # Store hashed_password in DB with default role = student
+            # Store all user details in DB with default role = student
             cur.execute(
                 """
-                INSERT INTO users_master (email, password, role_id)
-                VALUES (%s, %s, %s)
+                INSERT INTO users_master (name, email, password, phone, role_id, dob, address)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING id;
                 """,
-                (email, hashed_password, student_role_id),
+                (name, email, hashed_password, phone, student_role_id, dob, address),
             )
             conn.commit()
 

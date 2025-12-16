@@ -5,20 +5,71 @@
   <div class="auth-card">
     <h2 class="auth-title">Create Account</h2>
     <p class="auth-subtitle">
-      Register using your email address to manage student records.
+      Register to manage student records.
     </p>
 
     <form method="post" class="auth-form">
+      <!-- Full Name -->
       <div class="auth-field">
-        <label for="email">Email (Username)</label>
+        <label for="name">Full Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          pattern="[A-Za-z\s]{2,}"
+          title="Name must contain only letters"
+        >
+      </div>
+
+      <!-- Email -->
+      <div class="auth-field">
+        <label for="email">Email</label>
         <input
           type="email"
           id="email"
           name="email"
           required
+          maxlength="254"
         >
       </div>
 
+      <!-- Phone -->
+      <div class="auth-field">
+        <label for="phone">Phone Number</label>
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          pattern="[0-9]{10}"
+          maxlength="10"
+          inputmode="numeric"
+          title="Enter a valid 10-digit phone number"
+        >
+      </div>
+
+      <!-- Date of Birth -->
+      <div class="auth-field">
+        <label for="dob">Date of Birth</label>
+        <input
+          type="date"
+          id="dob"
+          name="dob"
+        >
+      </div>
+
+      <!-- Address -->
+      <div class="auth-field">
+        <label for="address">Address</label>
+        <textarea
+          id="address"
+          name="address"
+          rows="2"
+          maxlength="500"
+        ></textarea>
+      </div>
+
+      <!-- Password -->
       <div class="auth-field">
         <label for="password">Password</label>
         <input
@@ -26,9 +77,13 @@
           id="password"
           name="password"
           required
+          minlength="8"
+          maxlength="128"
+          title="Password must be at least 8 characters"
         >
       </div>
 
+      <!-- Confirm Password -->
       <div class="auth-field">
         <label for="confirm_password">Confirm Password</label>
         <input
@@ -36,6 +91,8 @@
           id="confirm_password"
           name="confirm_password"
           required
+          minlength="8"
+          maxlength="128"
         >
       </div>
 

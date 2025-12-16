@@ -178,6 +178,17 @@ input[type="number"] {
     font-size: 14px;
 }
 
+input[type="tel"],
+input[type="date"],
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #c5cbe3;
+    font-size: 14px;
+    font-family: "Poppins", sans-serif;
+}
+
 input:focus {
     outline: none;
     border-color: #0066cc;
