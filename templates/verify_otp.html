@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2 class="auth-title">Verify OTP</h2>
+    <p class="auth-subtitle">
+      Enter the 6-digit code sent to your email.
+    </p>
+
+    <form method="post" class="auth-form">
+
+      <div class="auth-field">
+        <label for="otp">OTP</label>
+        <input
+          type="text"
+          id="otp"
+          name="otp"
+          maxlength="6"
+          pattern="\d{6}"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          autofocus
+          required
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primary auth-btn">
+        Verify
+      </button>
+
+      <!-- ✅ ADD THIS BLOCK -->
+      <div class="auth-link">
+        <a href="{{ url_for('resend_otp') }}">Resend OTP</a>
+      </div>
+
+      <div class="auth-link">
+        <a href="{{ url_for('login') }}">Back to Login</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

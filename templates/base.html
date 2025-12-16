@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <h1>📚 Student Management</h1>
+    <ul>
+        <!-- Home: visible to all logged-in users -->
+        {% if session.get("user_email") %}
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+        {% endif %}
+
+        <!-- ADMIN: Add Student -->
+        {% if session.get("role") == "ADMIN" %}
+            <li><a href="{{ url_for('add_student') }}">Add Student</a></li>
+        {% endif %}
+
+        <!-- AUDITOR: Recycle Bin + Logs -->
+        {% if session.get("role") == "AUDITOR" %}
+            <li><a href="{{ url_for('recycle_bin') }}">Recycle Bin</a></li>
+            <li><a href="{{ url_for('logs') }}">Activity Logs</a></li>
+        {% endif %}
+
+        {% if session.get("user_email") %}
+            <!-- Logged-in user info -->
+            <li style="margin-left:auto;">
+                <span>👤 {{ session.get("user_email") }} ({{ session.get("role") }})</span>
+            </li>
+
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+            <!-- Not logged in -->
+            <li style="margin-left:auto;">
+                <a href="{{ url_for('login') }}">Login</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <p class="msg {{ category }}">{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

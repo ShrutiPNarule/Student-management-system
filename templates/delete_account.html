@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="auth-wrapper">
+  <div class="auth-card auth-card-danger">
+    <h2 class="auth-title">Delete Account</h2>
+    <p class="auth-subtitle">
+      This will permanently remove your login access from the system.
+    </p>
+
+    <div class="auth-warning-box">
+      <span class="auth-warning-icon">!</span>
+      <div>
+        <strong>Warning:</strong>
+        <span> This action cannot be undone. Your account will be deleted permanently.</span>
+      </div>
+    </div>
+
+    <form method="post" class="auth-form">
+      <button type="submit" class="btn btn-danger auth-btn">
+        Yes, delete my account
+      </button>
+
+      <div class="auth-link">
+        <a href="{{ url_for('index') }}">Cancel and go back</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

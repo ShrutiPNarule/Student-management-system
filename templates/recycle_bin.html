@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if session.get("role") != "AUDITOR" %}
+    <h3 style="color:red;">Unauthorized Access</h3>
+    <p>You do not have permission to view deleted student records.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+
+{% else %}
+
+<h2>Recycle Bin – Deleted Students</h2>
+
+<a href="{{ url_for('index') }}" class="btn btn-primary">⬅ Back to Active Students</a>
+
+{% if deleted_students %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Roll No</th>
+            <th>College</th>
+            <th>Phone</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for s in deleted_students %}
+        <tr>
+            <td>{{ s[0] }}</td>
+            <td>{{ s[1] }}</td>
+            <td>{{ s[2] }}</td>
+            <td>{{ s[3] }}</td>
+            <td>{{ s[4] }}</td>
+            <td>{{ s[5] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No deleted student records found.</p>
+{% endif %}
+
+{% endif %}
+{% endblock %}

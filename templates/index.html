@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="section-header">
+    <h2>Students</h2>
+
+    {% if session.get("role") == "ADMIN" %}
+        <a href="{{ url_for('add_student') }}" class="btn btn-success">
+            + Add New Student
+        </a>
+    {% endif %}
+</div>
+
+{% if students %}
+<div class="table-wrapper">
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Roll No</th>
+            <th>College</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>10th</th>
+            <th>12th</th>
+            <th>Y1</th>
+            <th>Y2</th>
+            <th>Y3</th>
+            <th>Y4</th>
+
+            {% if session.get("role") == "ADMIN" %}
+                <th>Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for s in students %}
+        <tr>
+            <td>{{ s[0] }}</td>
+            <td>{{ s[1] }}</td>
+            <td>{{ s[2] }}</td>
+            <td>{{ s[3] }}</td>
+            <td>{{ s[4] }}</td>
+            <td>{{ s[5] }}</td>
+            <td>{{ s[6] }}</td>
+            <td>{{ s[7] }}</td>
+            <td>{{ s[8] }}</td>
+            <td>{{ s[9] }}</td>
+            <td>{{ s[10] }}</td>
+            <td>{{ s[11] }}</td>
+
+            {% if session.get("role") == "ADMIN" %}
+            <td class="actions-cell">
+                <!-- Edit -->
+                <a href="{{ url_for('update_student_data', student_id=s[0]) }}"
+                   class="btn btn-secondary btn-sm">
+                    Edit
+                </a>
+
+                <!-- Soft Delete -->
+                <form action="{{ url_for('delete_student_data', student_id=s[0]) }}"
+                      method="POST" style="display:inline;">
+                    <button type="submit"
+                            class="btn btn-warning btn-sm"
+                            onclick="return confirm('Move this student to recycle bin?');">
+                        Soft Delete
+                    </button>
+                </form>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>No student records found.</p>
+{% endif %}
+
+{% endblock %}
