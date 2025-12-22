@@ -5,7 +5,17 @@
 <div class="section-header">
     <h2>Students</h2>
 
-    <div style="display: flex; gap: 15px; align-items: center;">
+    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <!-- Search Bar -->
+        <div class="search-group">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Search by name, roll no, email..." 
+                onkeyup="searchStudents()"
+            >
+        </div>
+
         <!-- Info Type Filter Dropdown -->
         <div class="filter-group">
             <label for="infoFilter">View:</label>
@@ -94,6 +104,46 @@
 {% endif %}
 
 <script>
+function searchStudents() {
+    const searchInput = document.getElementById('searchInput');
+    const filter = searchInput.value.toLowerCase();
+    const table = document.getElementById('studentsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    let visibleCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        
+        // Search in: Name (index 1), Roll No (index 2), Email (index 5)
+        const name = cells[1] ? cells[1].textContent.toLowerCase() : '';
+        const rollNo = cells[2] ? cells[2].textContent.toLowerCase() : '';
+        const email = cells[5] ? cells[5].textContent.toLowerCase() : '';
+
+        if (name.includes(filter) || rollNo.includes(filter) || email.includes(filter)) {
+            rows[i].style.display = '';
+            visibleCount++;
+        } else {
+            rows[i].style.display = 'none';
+        }
+    }
+
+    // Show "no results" message if needed
+    const noResultsMsg = document.getElementById('noSearchResults');
+    if (visibleCount === 0 && filter !== '') {
+        if (!noResultsMsg) {
+            const msg = document.createElement('p');
+            msg.id = 'noSearchResults';
+            msg.textContent = 'No students found matching your search.';
+            msg.style.color = '#666';
+            msg.style.marginTop = '10px';
+            table.parentNode.appendChild(msg);
+        }
+    } else if (noResultsMsg) {
+        noResultsMsg.remove();
+    }
+}
+
 function filterColumns(filterType) {
     const table = document.getElementById('studentsTable');
     const rows = table.querySelectorAll('tr');
@@ -134,6 +184,35 @@ function filterColumns(filterType) {
 </script>
 
 <style>
+.search-group {
+    display: flex;
+    align-items: center;
+}
+
+.search-group input {
+    padding: 10px 15px;
+    border: 1px solid #c5cbe3;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #f4f6ff;
+    width: 250px;
+    transition: 0.2s;
+}
+
+.search-group input:hover {
+    border-color: #0066cc;
+}
+
+.search-group input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+.search-group input::placeholder {
+    color: #999;
+}
+
 .filter-group {
     display: flex;
     align-items: center;

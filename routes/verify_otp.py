@@ -1,6 +1,8 @@
 from flask import render_template, request, redirect, url_for, flash, session
 from app import app
 from datetime import datetime
+import secrets
+from db import get_connection
 
 
 @app.route("/verify-otp", methods=["GET", "POST"])
@@ -45,9 +47,50 @@ def verify_otp():
         session["role"] = user_role
         session["user_id"] = user_id
 
+        # ✅ TC_LOGIN_014: Create persistent token if Remember Me checked
+        if remember_me:
+            conn = get_connection()
+            cur = conn.cursor()
+            
+            token = secrets.token_urlsafe(32)
+            from datetime import timedelta
+            expires_at = datetime.utcnow() + timedelta(days=30)
+            
+            # Create persistent_tokens table if not exists
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS persistent_tokens (
+                    id SERIAL PRIMARY KEY,
+                    user_id TEXT REFERENCES users_master(id) ON DELETE CASCADE,
+                    token VARCHAR(255) UNIQUE NOT NULL,
+                    expires_at TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            cur.execute("""
+                INSERT INTO persistent_tokens (user_id, token, expires_at)
+                VALUES (%s, %s, %s)
+            """, (user_id, token, expires_at))
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            # Set persistent cookie
+            response = redirect(url_for("index"))
+            response.set_cookie(
+                'remember_token',
+                token,
+                max_age=30*24*3600,  # 30 days
+                secure=False,  # Set to True in production
+                httponly=True,
+                samesite='Lax'
+            )
+            flash("Login successful!", "success")
+            return response
+
         flash("Login successful!", "success")
 
-        # ✅ STEP 2 FIX (TC_LOGIN_027)
+        # ✅ TC_LOGIN_027: Redirect to previous page after login
         next_url = session.pop("next_url", None)
         return redirect(next_url or url_for("index"))
 

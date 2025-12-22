@@ -126,12 +126,12 @@ def update_student_data(student_id):
     # ---------- GET: FETCH EXISTING DATA ----------
     cur.execute("""
         SELECT 
-            s.id, s.name, s.roll_no, s.college, s.phone, s.email,
+            s.id, u.name, s.enrollment_no, u.phone, u.email,
             m.marks_10th, m.marks_12th, m.marks1, m.marks2, m.marks3, m.marks4
         FROM students_master s
-        LEFT JOIN student_marks m ON s.id = m.student_id
+        LEFT JOIN users_master u ON s.user_id = u.id
+        LEFT JOIN student_marks m ON s.id::INTEGER = m.student_id
         WHERE s.id = %s
-          AND s.is_deleted = FALSE
     """, (student_id,))
 
     student = cur.fetchone()

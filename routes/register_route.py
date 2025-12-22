@@ -86,6 +86,16 @@ def register():
                 """,
                 (name, email, hashed_password, phone, student_role_id, dob, address),
             )
+            user_id = cur.fetchone()[0]
+
+            # Create student_master record for the user
+            cur.execute(
+                """
+                INSERT INTO students_master (user_id, current_status)
+                VALUES (%s, %s)
+                """,
+                (user_id, "active"),
+            )
             conn.commit()
 
             flash("Account created successfully. Please login.", "success")

@@ -4,6 +4,7 @@ from app import app
 import psycopg2
 import re
 from routes.log_utils import log_action
+from werkzeug.security import generate_password_hash
 
 
 EMAIL_REGEX = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
@@ -69,19 +70,40 @@ def add_student():
         try:
             # ---------- DUPLICATE CHECK ----------
             cur.execute(
-                "SELECT 1 FROM students_master WHERE roll_no = %s OR email = %s",
-                (roll_no, email)
+                "SELECT 1 FROM users_master WHERE email = %s",
+                (email,)
             )
             if cur.fetchone():
-                flash("Roll number or email already exists.", "error")
+                flash("Email already exists.", "error")
                 return render_template("add_student.html")
 
-            # ---------- INSERT STUDENT ----------
+            # Get student role_id
+            cur.execute(
+                "SELECT id FROM roles_master WHERE name = %s",
+                ("student",),
+            )
+            role_row = cur.fetchone()
+            if not role_row:
+                flash("Student role not found in system.", "error")
+                return render_template("add_student.html")
+
+            student_role_id = role_row[0]
+
+            # ---------- CREATE USER RECORD ----------
             cur.execute("""
-                INSERT INTO students_master (name, roll_no, college, phone, email)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO users_master (name, email, password, phone, role_id, address)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id;
-            """, (name, roll_no, college, phone, email))
+            """, (name, email, generate_password_hash(email + roll_no, method="pbkdf2:sha256", salt_length=16), phone, student_role_id, college))
+
+            user_id = cur.fetchone()[0]
+
+            # ---------- CREATE STUDENT RECORD ----------
+            cur.execute("""
+                INSERT INTO students_master (user_id, enrollment_no, current_status)
+                VALUES (%s, %s, %s)
+                RETURNING id;
+            """, (user_id, roll_no, "active"))
 
             student_id = cur.fetchone()[0]
 

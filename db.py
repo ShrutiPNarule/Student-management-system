@@ -27,25 +27,39 @@ cur.execute("CREATE SEQUENCE IF NOT EXISTS user_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS school_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS college_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS subject_seq START 1;")
+cur.execute("CREATE SEQUENCE IF NOT EXISTS student_seq START 1;")
+cur.execute("CREATE SEQUENCE IF NOT EXISTS mark_seq START 1;")
+cur.execute("CREATE SEQUENCE IF NOT EXISTS enrollment_seq START 1;")
+cur.execute("CREATE SEQUENCE IF NOT EXISTS school_history_seq START 1;")
+cur.execute("CREATE SEQUENCE IF NOT EXISTS college_subject_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS activity_seq START 1;")
 
 # =========================
 # MASTER TABLES
 # =========================
 
-# ---- ROLES ----
+# ---- ROLES MASTER (WITH PERMISSIONS) ----
 cur.execute("""
 CREATE TABLE IF NOT EXISTS roles_master (
     id TEXT PRIMARY KEY DEFAULT
         'RL' || LPAD(nextval('role_seq')::TEXT, 4, '0'),
     name TEXT UNIQUE NOT NULL,
-    status VARCHAR(20) DEFAULT 'active',
+
+    view_student BOOLEAN DEFAULT FALSE,
+    add_student BOOLEAN DEFAULT FALSE,
+    delete_student BOOLEAN DEFAULT FALSE,
+    change_user_role BOOLEAN DEFAULT FALSE,
+    add_marks BOOLEAN DEFAULT FALSE,
+    view_activity_log BOOLEAN DEFAULT FALSE,
+    create_application BOOLEAN DEFAULT FALSE,
+    approve_application BOOLEAN DEFAULT FALSE,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
-# ---- USERS ----
+# ---- USERS MASTER ----
 cur.execute("""
 CREATE TABLE IF NOT EXISTS users_master (
     id TEXT PRIMARY KEY DEFAULT
@@ -57,13 +71,12 @@ CREATE TABLE IF NOT EXISTS users_master (
     role_id TEXT REFERENCES roles_master(id) ON DELETE SET NULL,
     dob DATE,
     address TEXT,
-    status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
-# ---- SCHOOLS ----
+# ---- SCHOOLS MASTER ----
 cur.execute("""
 CREATE TABLE IF NOT EXISTS schools_master (
     id TEXT PRIMARY KEY DEFAULT
@@ -73,13 +86,12 @@ CREATE TABLE IF NOT EXISTS schools_master (
     district TEXT,
     state TEXT,
     board TEXT,
-    status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
-# ---- COLLEGES ----
+# ---- COLLEGES MASTER ----
 cur.execute("""
 CREATE TABLE IF NOT EXISTS colleges_master (
     id TEXT PRIMARY KEY DEFAULT
@@ -92,65 +104,97 @@ CREATE TABLE IF NOT EXISTS colleges_master (
     institute_type TEXT,
     is_women BOOLEAN DEFAULT FALSE,
     is_minority BOOLEAN DEFAULT FALSE,
-    status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
-# ---- SUBJECTS ----
+# ---- SUBJECTS MASTER ----
 cur.execute("""
 CREATE TABLE IF NOT EXISTS subjects_master (
     id TEXT PRIMARY KEY DEFAULT
         'SB' || LPAD(nextval('subject_seq')::TEXT, 5, '0'),
     name TEXT NOT NULL,
-    credits INTEGER,
     semester INTEGER,
-    status VARCHAR(20) DEFAULT 'active',
+    credits INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
 # =========================
-# STUDENT MANAGEMENT TABLES
+# STUDENT MANAGEMENT
 # =========================
 
 # ---- STUDENTS MASTER ----
 cur.execute("""
 CREATE TABLE IF NOT EXISTS students_master (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    roll_no VARCHAR(20) UNIQUE NOT NULL,
-    college VARCHAR(100),
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    is_deleted BOOLEAN DEFAULT FALSE,
-    status VARCHAR(20) DEFAULT 'active',
+    id TEXT PRIMARY KEY DEFAULT
+        'ST' || LPAD(nextval('student_seq')::TEXT, 6, '0'),
+    user_id TEXT REFERENCES users_master(id) ON DELETE SET NULL,
+    enrollment_no VARCHAR(30) UNIQUE,
+    current_status VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
-# ---- STUDENT MARKS ----
+# ---- STUDENT SCHOOL HISTORY ----
 cur.execute("""
-CREATE TABLE IF NOT EXISTS student_marks (
-    id SERIAL PRIMARY KEY,
-    student_id INT NOT NULL REFERENCES students_master(id) ON DELETE CASCADE,
-    marks_10th INT,
-    marks_12th INT,
-    marks1 INT,
-    marks2 INT,
-    marks3 INT,
-    marks4 INT,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    status VARCHAR(20) DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS student_school_history (
+    id TEXT PRIMARY KEY DEFAULT
+        'SH' || LPAD(nextval('school_history_seq')::TEXT, 6, '0'),
+    student_id TEXT NOT NULL REFERENCES students_master(id) ON DELETE CASCADE,
+    school_id TEXT NOT NULL REFERENCES schools_master(id) ON DELETE CASCADE,
+    year_of_passing INTEGER,
+    percentage DECIMAL(5,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# ---- COLLEGE ENROLLMENT ----
+cur.execute("""
+CREATE TABLE IF NOT EXISTS college_enrollment (
+    id TEXT PRIMARY KEY DEFAULT
+        'EN' || LPAD(nextval('enrollment_seq')::TEXT, 6, '0'),
+    student_id TEXT NOT NULL REFERENCES students_master(id) ON DELETE CASCADE,
+    college_id TEXT NOT NULL REFERENCES colleges_master(id) ON DELETE CASCADE,
+    admission_year INTEGER,
+    status VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# ---- COLLEGE SUBJECTS ----
+cur.execute("""
+CREATE TABLE IF NOT EXISTS college_subjects (
+    id TEXT PRIMARY KEY DEFAULT
+        'CS' || LPAD(nextval('college_subject_seq')::TEXT, 6, '0'),
+    college_id TEXT NOT NULL REFERENCES colleges_master(id) ON DELETE CASCADE,
+    subject_id TEXT NOT NULL REFERENCES subjects_master(id) ON DELETE CASCADE,
+    semester INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# ---- MARKS ----
+cur.execute("""
+CREATE TABLE IF NOT EXISTS marks (
+    id TEXT PRIMARY KEY DEFAULT
+        'MK' || LPAD(nextval('mark_seq')::TEXT, 6, '0'),
+    student_id TEXT NOT NULL REFERENCES students_master(id) ON DELETE CASCADE,
+    subject_id TEXT NOT NULL REFERENCES subjects_master(id) ON DELETE CASCADE,
+    marks INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
 
 # =========================
-# ACTIVITY LOG (IMPORTANT)
+# ACTIVITY LOG
 # =========================
 cur.execute("""
 CREATE TABLE IF NOT EXISTS activity_log (
@@ -162,7 +206,6 @@ CREATE TABLE IF NOT EXISTS activity_log (
     entity_id TEXT,
     metadata JSONB,
     ip_address TEXT,
-    status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """)
@@ -176,10 +219,17 @@ conn.commit()
 # HELPERS
 # =========================
 def get_connection():
-    return conn
-
-def get_cursor():
-    return cur
+    try:
+        return psycopg2.connect(
+            database=os.getenv("DB_DATABASE"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            host=os.getenv("DB_HOST", "localhost"),
+            port=os.getenv("DB_PORT", 5432),
+        )
+    except Exception as e:
+        print(f"[DB ERROR] Unable to create connection: {e}")
+        return None
 
 def close_connection():
     cur.close()

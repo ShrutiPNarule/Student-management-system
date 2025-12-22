@@ -6,6 +6,9 @@
     <h2 class="auth-title">Login</h2>
     <p class="auth-subtitle">Sign in with your registered email address</p>
 
+    <!-- ✅ TC_LOGIN_034: ARIA live region for messages -->
+    <div id="flash-messages" role="alert" aria-live="polite" aria-atomic="true" style="display:none;"></div>
+
     <form method="post" class="auth-form" autocomplete="on">
 
       <!-- EMAIL -->
@@ -18,7 +21,11 @@
           required
           maxlength="254"
           placeholder="user@example.com"
+          aria-describedby="email-help"
         >
+        <div id="email-length-warning" style="display:none; color:orange; font-size:0.9em;">
+          ⚠️ Email length is close to maximum (254 characters)
+        </div>
       </div>
 
       <!-- PASSWORD -->
@@ -31,22 +38,31 @@
             name="password"
             required
             maxlength="128"
+            aria-describedby="pwd-help"
           >
-          <span
+          <!-- ✅ TC_LOGIN_034: Accessible password toggle with ARIA labels -->
+          <button
+            type="button"
+            id="password-toggle"
             onclick="togglePassword()"
-            style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;"
+            aria-label="Toggle password visibility"
+            aria-pressed="false"
+            style="background:none; border:none; cursor:pointer; position:absolute; right:10px; top:50%; transform:translateY(-50%); padding:5px;"
             title="Show / Hide Password"
           >
             👁️
-          </span>
+          </button>
+        </div>
+        <div id="pwd-length-warning" style="display:none; color:orange; font-size:0.9em;">
+          ⚠️ Password length is close to maximum (128 characters)
         </div>
       </div>
 
       <!-- REMEMBER ME -->
       <div class="auth-field">
         <label>
-          <input type="checkbox" name="remember_me">
-          Remember Me
+          <input type="checkbox" name="remember_me" aria-label="Remember me for 30 days">
+          Remember Me (30 days)
         </label>
       </div>
 
@@ -71,9 +87,31 @@
 
 <script>
 function togglePassword() {
+  const btn = document.getElementById("password-toggle");
   const pwd = document.getElementById("password");
-  pwd.type = pwd.type === "password" ? "text" : "password";
+  const isHidden = pwd.type === "password";
+  pwd.type = isHidden ? "text" : "password";
+  // ✅ TC_LOGIN_034: Update ARIA pressed state
+  btn.setAttribute("aria-pressed", isHidden ? "true" : "false");
+  btn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
 }
+
+// ✅ TC_LOGIN_009, TC_LOGIN_010: Monitor input length
+document.getElementById("email").addEventListener("input", function() {
+    if (this.value.length > 240) {
+        document.getElementById("email-length-warning").style.display = "block";
+    } else {
+        document.getElementById("email-length-warning").style.display = "none";
+    }
+});
+
+document.getElementById("password").addEventListener("input", function() {
+    if (this.value.length > 115) {
+        document.getElementById("pwd-length-warning").style.display = "block";
+    } else {
+        document.getElementById("pwd-length-warning").style.display = "none";
+    }
+});
 </script>
 
 {% endblock %}
