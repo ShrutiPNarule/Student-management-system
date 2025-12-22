@@ -65,26 +65,14 @@ def register():
             conn = get_connection()
             cur = conn.cursor()
 
-            # Get role_id for 'student'
-            cur.execute(
-                "SELECT id FROM roles_master WHERE name = %s",
-                ("student",),
-            )
-            row = cur.fetchone()
-            if not row:
-                flash("Role 'student' not found in roles table.", "error")
-                return render_template("register.html")
-
-            student_role_id = row[0]
-
-            # Store all user details in DB with default role = student
+            # Store user details in DB with role_id = NULL (to be assigned manually by admin)
             cur.execute(
                 """
-                INSERT INTO users_master (name, email, password, phone, role_id, dob, address)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO users_master (name, email, password, phone, dob, address)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id;
                 """,
-                (name, email, hashed_password, phone, student_role_id, dob, address),
+                (name, email, hashed_password, phone, dob, address),
             )
             user_id = cur.fetchone()[0]
 
@@ -98,7 +86,7 @@ def register():
             )
             conn.commit()
 
-            flash("Account created successfully. Please login.", "success")
+            flash("Account created successfully. Admin will assign your role. Please login.", "success")
             return redirect(url_for("login"))
 
         except psycopg2.Error as e:

@@ -57,3 +57,10 @@ from .forgot_password import *
 
 # Logs / audit
 from .log_route import *
+
+# Role management
+from .role_management import *
+from .manage_roles_route import *
+
+# Approvals
+from .approval_route import *

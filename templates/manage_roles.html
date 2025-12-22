@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") != "superadmin" %}
+    <h3 style="color:red;">Unauthorized Access</h3>
+    <p>You do not have permission to manage roles.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+
+{% else %}
+
+<div class="container">
+    <h2>👥 Manage User Roles</h2>
+    <p style="color: #666; margin-bottom: 20px;">Change user roles as needed. Students can be promoted to admin/auditor/superadmin, and vice versa.</p>
+
+    {% if users %}
+        <div class="users-list">
+            {% for user in users %}
+                <div class="user-card">
+                    <div class="user-header">
+                        <h3>{{ user[1] }}</h3>
+                        <span class="badge badge-{{ user[3] | lower }}">{{ user[3] | upper }}</span>
+                    </div>
+                    
+                    <div class="user-details">
+                        <p><strong>Email:</strong> {{ user[2] }}</p>
+                        <p><strong>User ID:</strong> {{ user[0] }}</p>
+                        <p><strong>Current Role:</strong> <em>{{ user[3] }}</em></p>
+                    </div>
+
+                    <div class="role-change-section">
+                        <form method="POST" action="{{ url_for('change_role_superadmin', user_id=user[0]) }}" style="display: inline;">
+                            <select name="new_role" required style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                <option value="">-- Select new role --</option>
+                                <option value="student">Student</option>
+                                <option value="admin">Admin</option>
+                                <option value="auditor">Auditor</option>
+                                <option value="superadmin">Superadmin</option>
+                            </select>
+                            <button type="submit" class="btn btn-info">🔄 Change Role</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p>No users found.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .users-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .user-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .user-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 10px;
+    }
+
+    .user-header h3 {
+        margin: 0;
+        color: #333;
+    }
+
+    .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .badge-student {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge-admin {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .badge-auditor {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-superadmin {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .user-details {
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .user-details p {
+        margin: 8px 0;
+        color: #666;
+    }
+
+    .user-details strong {
+        color: #333;
+    }
+
+    .role-change-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .role-change-section select {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-info:hover {
+        background-color: #138496;
+        transform: translateY(-2px);
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    @media (max-width: 768px) {
+        .users-list {
+            grid-template-columns: 1fr;
+        }
+
+        .role-change-section {
+            flex-direction: column;
+        }
+
+        .btn-info {
+            width: 100%;
+        }
+    }
+</style>
+
+{% endif %}
+{% endblock %}

@@ -21,23 +21,23 @@ def index():
     if role == "student":
         cur.execute("""
             SELECT 
-                s.id, u.name, s.enrollment_no, u.phone, u.email,
+                s.id, u.name, s.enrollment_no, u.address, u.phone, u.email,
                 m.marks_10th, m.marks_12th, m.marks1, m.marks2, m.marks3, m.marks4
             FROM students_master s
             LEFT JOIN users_master u ON s.user_id = u.id
-            LEFT JOIN student_marks m ON s.id::INTEGER = m.student_id
+            LEFT JOIN student_marks m ON s.id = m.student_id
             WHERE u.email = %s
             ORDER BY s.id;
         """, (user_email,))
 
-    elif role in ("admin", "auditor"):
+    elif role in ("admin", "auditor", "superadmin"):
         cur.execute("""
             SELECT 
-                s.id, u.name, s.enrollment_no, u.phone, u.email,
+                s.id, u.name, s.enrollment_no, u.address, u.phone, u.email,
                 m.marks_10th, m.marks_12th, m.marks1, m.marks2, m.marks3, m.marks4
             FROM students_master s
             LEFT JOIN users_master u ON s.user_id = u.id
-            LEFT JOIN student_marks m ON s.id::INTEGER = m.student_id
+            LEFT JOIN student_marks m ON s.id = m.student_id
             ORDER BY s.id;
         """)
 

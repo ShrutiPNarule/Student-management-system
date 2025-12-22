@@ -1,6 +1,10 @@
 import psycopg2
 import os
 import sys
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # =========================
 # DB CONNECTION
@@ -11,10 +15,17 @@ try:
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
         host=os.getenv("DB_HOST", "localhost"),
-        port=os.getenv("DB_PORT", 5432),
+        port=os.getenv("DB_PORT", "5432"),
+        connect_timeout=5
     )
+    print("[DB] ✅ Database connection established")
 except Exception as e:
     print(f"[DB ERROR] Unable to connect: {e}")
+    print(f"[DB ERROR] Attempted connection with:")
+    print(f"  - Database: {os.getenv('DB_DATABASE')}")
+    print(f"  - User: {os.getenv('DB_USER')}")
+    print(f"  - Host: {os.getenv('DB_HOST', 'localhost')}")
+    print(f"  - Port: {os.getenv('DB_PORT', '5432')}")
     sys.exit(1)
 
 cur = conn.cursor()
@@ -71,6 +82,8 @@ CREATE TABLE IF NOT EXISTS users_master (
     role_id TEXT REFERENCES roles_master(id) ON DELETE SET NULL,
     dob DATE,
     address TEXT,
+    failed_login_attempts INTEGER DEFAULT 0,
+    locked_until TIMESTAMP DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -134,6 +147,7 @@ CREATE TABLE IF NOT EXISTS students_master (
     user_id TEXT REFERENCES users_master(id) ON DELETE SET NULL,
     enrollment_no VARCHAR(30) UNIQUE,
     current_status VARCHAR(20),
+    is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -190,6 +204,43 @@ CREATE TABLE IF NOT EXISTS marks (
     marks INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# ---- STUDENT MARKS (for storing marks by year) ----
+cur.execute("""
+CREATE TABLE IF NOT EXISTS student_marks (
+    id SERIAL PRIMARY KEY,
+    student_id TEXT NOT NULL REFERENCES students_master(id) ON DELETE CASCADE,
+    marks_10th INTEGER,
+    marks_12th INTEGER,
+    marks1 INTEGER,
+    marks2 INTEGER,
+    marks3 INTEGER,
+    marks4 INTEGER,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# =========================
+# ADMIN APPROVAL REQUESTS
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS admin_approval_requests (
+    id TEXT PRIMARY KEY DEFAULT
+        'AR' || LPAD(nextval('activity_seq')::TEXT, 6, '0'),
+    admin_id TEXT NOT NULL REFERENCES users_master(id) ON DELETE CASCADE,
+    request_type TEXT NOT NULL,
+    entity_type TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    action_data JSONB,
+    status TEXT DEFAULT 'pending',
+    approval_notes TEXT,
+    approved_by TEXT REFERENCES users_master(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved_at TIMESTAMP DEFAULT NULL
 );
 """)
 

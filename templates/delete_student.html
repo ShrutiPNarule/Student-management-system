@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") != "admin" %}
+    <h3 style="color:red;">Unauthorized Access</h3>
+    <p>You do not have permission to delete student records.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+
+{% else %}
+
+<div class="delete-confirmation-container">
+    <div class="delete-card">
+        
+        <!-- Header -->
+        <div class="delete-header">
+            <h2>⚠️ Delete Student</h2>
+            <p class="warning-text">This action will send a deletion request to the superadmin for approval</p>
+        </div>
+
+        <!-- Student Details Preview -->
+        <div class="student-details-box">
+            <h3>Student Information</h3>
+            <div class="detail-row">
+                <span class="label">Name:</span>
+                <span class="value">{{ student[1] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Roll Number:</span>
+                <span class="value">{{ student[2] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Email:</span>
+                <span class="value">{{ student[4] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Phone:</span>
+                <span class="value">{{ student[3] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">College:</span>
+                <span class="value">{{ student[5] }}</span>
+            </div>
+        </div>
+
+        <!-- Warning Message -->
+        <div class="warning-box">
+            <h4>⚠️ Important Notice</h4>
+            <ul>
+                <li>This will <strong>soft delete</strong> the student record (not permanent)</li>
+                <li>The record will be moved to the <strong>Recycle Bin</strong></li>
+                <li>A deletion request will be sent to <strong>Superadmin</strong> for approval</li>
+                <li>Superadmin can approve or reject this request</li>
+                <li>The record can be recovered from the recycle bin</li>
+            </ul>
+        </div>
+
+        <!-- Confirmation Text -->
+        <div class="confirmation-text">
+            <p><strong>Are you sure you want to proceed?</strong></p>
+            <p style="color: #666; font-size: 14px;">The superadmin will review this deletion request</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <form method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger btn-lg">
+                    🗑️ Confirm Delete
+                </button>
+            </form>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary btn-lg">
+                ✖️ Cancel
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .delete-confirmation-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px);
+        padding: 20px;
+    }
+
+    .delete-card {
+        background: white;
+        border: 2px solid #dc3545;
+        border-radius: 12px;
+        padding: 40px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.15);
+    }
+
+    .delete-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #dc3545;
+        padding-bottom: 20px;
+    }
+
+    .delete-header h2 {
+        margin: 0 0 10px 0;
+        color: #dc3545;
+        font-size: 28px;
+    }
+
+    .warning-text {
+        color: #666;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .student-details-box {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .student-details-box h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-row .label {
+        font-weight: 600;
+        color: #555;
+        width: 150px;
+    }
+
+    .detail-row .value {
+        color: #333;
+        flex: 1;
+        text-align: right;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .warning-box h4 {
+        margin: 0 0 12px 0;
+        color: #856404;
+        font-size: 16px;
+    }
+
+    .warning-box ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #856404;
+        line-height: 1.8;
+    }
+
+    .warning-box li {
+        margin-bottom: 8px;
+    }
+
+    .confirmation-text {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 15px;
+        background: #f0f0f0;
+        border-radius: 8px;
+    }
+
+    .confirmation-text p {
+        margin: 5px 0;
+    }
+
+    .confirmation-text strong {
+        color: #dc3545;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-lg {
+        padding: 12px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        min-width: 180px;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 600px) {
+        .delete-card {
+            padding: 20px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-lg {
+            width: 100%;
+            min-width: auto;
+        }
+
+        .detail-row {
+            flex-direction: column;
+        }
+
+        .detail-row .label {
+            width: auto;
+            margin-bottom: 5px;
+        }
+
+        .detail-row .value {
+            text-align: left;
+        }
+    }
+</style>
+
+{% endif %}
+{% endblock %}
