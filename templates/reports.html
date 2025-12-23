@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow-lg">
+                <div class="card-header" style="background: linear-gradient(135deg, #f0f2f4 0%, #ebedef 100%); color: rgb(1, 0, 7);">
+                    <h2 class="mb-0">
+                        <i class="fas fa-file-pdf"></i> Generate Student Reports
+                    </h2>
+                    <small class="text-light">Filter students and generate PDF reports</small>
+                </div>
+
+                <div class="card-body">
+                    <!-- Status Message -->
+                    {% if session.get('user_email') %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <strong>Welcome!</strong> You can use the filters below to generate customized student reports in PDF format.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
+                    <!-- Filter Form -->
+                    <form id="reportFilterForm" method="POST" action="{{ url_for('generate_report') }}">
+                        <h5 class="mb-4" style="color: #1a3a52; border-bottom: 2px solid #eef1f4; padding-bottom: 10px;">
+                            <i class="fas fa-filter"></i> Available Filters
+                        </h5>
+
+                        <div class="row">
+                            <!-- Filter 1: 10th Class Marks Minimum -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="marks_10th_min" class="form-label">
+                                    <strong>10th Marks (Minimum)</strong>
+                                </label>
+                                <input 
+                                    type="number" 
+                                    class="form-control" 
+                                    id="marks_10th_min" 
+                                    name="marks_10th_min" 
+                                    min="0" 
+                                    max="100" 
+                                    placeholder="e.g., 80"
+                                    title="Enter minimum marks for 10th class"
+                                >
+                                <small class="text-muted">Show students with 10th marks ≥ this value</small>
+                            </div>
+
+                            <!-- Filter 2: 10th Class Marks Maximum -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="marks_10th_max" class="form-label">
+                                    <strong>10th Marks (Maximum)</strong>
+                                </label>
+                                <input 
+                                    type="number" 
+                                    class="form-control" 
+                                    id="marks_10th_max" 
+                                    name="marks_10th_max" 
+                                    min="0" 
+                                    max="100" 
+                                    placeholder="e.g., 95"
+                                    title="Enter maximum marks for 10th class"
+                                >
+                                <small class="text-muted">Show students with 10th marks ≤ this value</small>
+                            </div>
+
+                            <!-- Filter 3: 12th Class Marks Minimum -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="marks_12th_min" class="form-label">
+                                    <strong>12th Marks (Minimum)</strong>
+                                </label>
+                                <input 
+                                    type="number" 
+                                    class="form-control" 
+                                    id="marks_12th_min" 
+                                    name="marks_12th_min" 
+                                    min="0" 
+                                    max="100" 
+                                    placeholder="e.g., 75"
+                                    title="Enter minimum marks for 12th class"
+                                >
+                                <small class="text-muted">Show students with 12th marks ≥ this value</small>
+                            </div>
+
+                            <!-- Filter 4: 12th Class Marks Maximum -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="marks_12th_max" class="form-label">
+                                    <strong>12th Marks (Maximum)</strong>
+                                </label>
+                                <input 
+                                    type="number" 
+                                    class="form-control" 
+                                    id="marks_12th_max" 
+                                    name="marks_12th_max" 
+                                    min="0" 
+                                    max="100" 
+                                    placeholder="e.g., 98"
+                                    title="Enter maximum marks for 12th class"
+                                >
+                                <small class="text-muted">Show students with 12th marks ≤ this value</small>
+                            </div>
+
+                            <!-- Filter 5: School -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="school_id" class="form-label">
+                                    <strong>School</strong>
+                                </label>
+                                <select class="form-select" id="school_id" name="school_id">
+                                    <option value="">-- All Schools --</option>
+                                    {% for school_id, school_name in schools %}
+                                        <option value="{{ school_id }}">{{ school_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Filter by specific school</small>
+                            </div>
+
+                            <!-- Filter 6: College -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="college_id" class="form-label">
+                                    <strong>College</strong>
+                                </label>
+                                <select class="form-select" id="college_id" name="college_id">
+                                    <option value="">-- All Colleges --</option>
+                                    {% for college_id, college_name in colleges %}
+                                        <option value="{{ college_id }}">{{ college_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Filter by specific college</small>
+                            </div>
+
+                            <!-- Filter 7: State -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="state" class="form-label">
+                                    <strong>State</strong>
+                                </label>
+                                <select class="form-select" id="state" name="state">
+                                    <option value="">-- All States --</option>
+                                    {% for state in states %}
+                                        <option value="{{ state }}">{{ state }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Filter by state</small>
+                            </div>
+
+                            <!-- Filter 8: Board -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="board" class="form-label">
+                                    <strong>School Board</strong>
+                                </label>
+                                <select class="form-select" id="board" name="board">
+                                    <option value="">-- All Boards --</option>
+                                    {% for board in boards %}
+                                        <option value="{{ board }}">{{ board }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Filter by school board</small>
+                            </div>
+
+                            <!-- Filter 9: College Type -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="college_type" class="form-label">
+                                    <strong>College Type</strong>
+                                </label>
+                                <select class="form-select" id="college_type" name="college_type">
+                                    <option value="">-- All Types --</option>
+                                    {% for college_type in college_types %}
+                                        <option value="{{ college_type }}">{{ college_type }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Filter by institute type</small>
+                            </div>
+
+                            <!-- Filter 10: Current Status -->
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <label for="current_status" class="form-label">
+                                    <strong>Current Status</strong>
+                                </label>
+                                <select class="form-select" id="current_status" name="current_status">
+                                    <option value="">-- All Status --</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="graduated">Graduated</option>
+                                    <option value="dropped">Dropped</option>
+                                </select>
+                                <small class="text-muted">Filter by current status</small>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div style="border-top: 2px solid #e9ecef; padding-top: 20px;">
+                                    <button 
+                                        type="submit" 
+                                        class="btn btn-primary btn-lg me-2"
+                                        style="background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); border: none;"
+                                    >
+                                        <i class="fas fa-file-pdf"></i> Generate PDF Report
+                                    </button>
+                                    <button 
+                                        type="reset" 
+                                        class="btn btn-secondary btn-lg"
+                                    >
+                                        <i class="fas fa-redo"></i> Clear Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Help Section -->
+                    <div class="alert alert-light mt-5 border border-secondary">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle"></i> How to Use Filters
+                        </h6>
+                        <ul class="mb-0">
+                            <li><strong>Mark Filters:</strong> Enter minimum and maximum values to find students within a score range</li>
+                            <li><strong>School/College:</strong> Select specific institutions to filter students from</li>
+                            <li><strong>Geographic & Board:</strong> Use state and board filters to find students by region and education board</li>
+                            <li><strong>Status:</strong> Filter students by their current enrollment status</li>
+                            <li><strong>Combine Filters:</strong> Use multiple filters together for more specific results</li>
+                            <li><strong>Clear Filters:</strong> Click "Clear Filters" to generate a report with all students</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-label {
+        color: #1a3a52;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #2d5a7b;
+        box-shadow: 0 0 0 0.2rem rgba(42, 90, 123, 0.25);
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        border-radius: 8px 8px 0 0;
+        padding: 20px;
+    }
+
+    .btn-primary {
+        padding: 10px 30px;
+        font-weight: 600;
+        border-radius: 5px;
+    }
+
+    .btn-secondary {
+        padding: 10px 30px;
+        font-weight: 600;
+        border-radius: 5px;
+    }
+
+    .alert-light {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

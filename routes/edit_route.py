@@ -32,10 +32,15 @@ def update_student_data(student_id):
         college = request.form.get("college", "").strip()
         phone = request.form.get("phone", "").strip()
         email = request.form.get("email", "").strip().lower()
+        dob = request.form.get("dob", "").strip()
+        birth_place = request.form.get("birth_place", "").strip()
+        religion = request.form.get("religion", "").strip()
+        category = request.form.get("category", "").strip()
+        caste = request.form.get("caste", "").strip()
 
         # ---------- BASIC VALIDATION ----------
-        if not name or not roll_no or not college or not phone or not email:
-            flash("All fields are required.", "error")
+        if not name or not roll_no or not college or not phone or not email or not dob or not birth_place or not religion or not category:
+            flash("All required fields must be filled.", "error")
             return redirect(url_for("update_student_data", student_id=student_id))
 
         if not re.fullmatch(r"[A-Za-z ]{2,}", name):
@@ -99,6 +104,11 @@ def update_student_data(student_id):
                 "college": college,
                 "phone": phone,
                 "email": email,
+                "dob": dob,
+                "birth_place": birth_place,
+                "religion": religion,
+                "category": category,
+                "caste": caste,
                 "marks_10th": marks_10th,
                 "marks_12th": marks_12th,
                 "marks1": marks1,
@@ -137,7 +147,8 @@ def update_student_data(student_id):
     cur.execute("""
         SELECT 
             s.id, u.name, s.enrollment_no, u.phone, u.email, u.address,
-            m.marks_10th, m.marks_12th, m.marks1, m.marks2, m.marks3, m.marks4
+            m.marks_10th, m.marks_12th, m.marks1, m.marks2, m.marks3, m.marks4,
+            u.dob, u.birth_place, u.religion, u.category, u.caste
         FROM students_master s
         LEFT JOIN users_master u ON s.user_id = u.id
         LEFT JOIN student_marks m ON s.id = m.student_id

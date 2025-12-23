@@ -21,6 +21,11 @@
             <li><a href="{{ url_for('add_student') }}">Add Student</a></li>
         {% endif %}
 
+        <!-- ADMIN & SUPERADMIN: Reports -->
+        {% if session.get("role") in ["admin", "superadmin"] %}
+            <li><a href="{{ url_for('reports') }}">📊 Reports</a></li>
+        {% endif %}
+
         <!-- SUPERADMIN: View Approvals & Change Roles -->
         {% if session.get("role") == "superadmin" %}
             <li><a href="{{ url_for('view_approvals') }}">📋 Approvals</a></li>

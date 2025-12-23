@@ -64,3 +64,5 @@ from .manage_roles_route import *
 
 # Approvals
 from .approval_route import *
+# Reports
+from .reports_route import *

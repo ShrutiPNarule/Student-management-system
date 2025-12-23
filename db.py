@@ -89,6 +89,15 @@ CREATE TABLE IF NOT EXISTS users_master (
 );
 """)
 
+# Add new columns to users_master if they don't exist
+try:
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS religion VARCHAR(50);")
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS category VARCHAR(50);")
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS caste VARCHAR(50);")
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS birth_place VARCHAR(100);")
+except:
+    pass
+
 # ---- SCHOOLS MASTER ----
 cur.execute("""
 CREATE TABLE IF NOT EXISTS schools_master (

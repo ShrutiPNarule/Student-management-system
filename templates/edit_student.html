@@ -41,6 +41,68 @@
 
         <div class="form-row">
             <div class="form-group">
+                <label>Date of Birth</label>
+                <input
+                    type="date"
+                    name="dob"
+                    value="{{ student[12] }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Birth Place</label>
+                <input
+                    type="text"
+                    name="birth_place"
+                    value="{{ student[13] }}"
+                    required
+                    maxlength="100"
+                >
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Religion</label>
+                <select name="religion" required>
+                    <option value="">-- Select Religion --</option>
+                    <option value="Hindu" {% if student[14] == 'Hindu' %}selected{% endif %}>Hindu</option>
+                    <option value="Muslim" {% if student[14] == 'Muslim' %}selected{% endif %}>Muslim</option>
+                    <option value="Christian" {% if student[14] == 'Christian' %}selected{% endif %}>Christian</option>
+                    <option value="Sikh" {% if student[14] == 'Sikh' %}selected{% endif %}>Sikh</option>
+                    <option value="Buddhist" {% if student[14] == 'Buddhist' %}selected{% endif %}>Buddhist</option>
+                    <option value="Jain" {% if student[14] == 'Jain' %}selected{% endif %}>Jain</option>
+                    <option value="Other" {% if student[14] == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category" required>
+                    <option value="">-- Select Category --</option>
+                    <option value="General" {% if student[15] == 'General' %}selected{% endif %}>General</option>
+                    <option value="OBC" {% if student[15] == 'OBC' %}selected{% endif %}>OBC</option>
+                    <option value="SC" {% if student[15] == 'SC' %}selected{% endif %}>SC</option>
+                    <option value="ST" {% if student[15] == 'ST' %}selected{% endif %}>ST</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Caste</label>
+                <input
+                    type="text"
+                    name="caste"
+                    value="{{ student[16] }}"
+                    maxlength="50"
+                >
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
                 <label>College</label>
                 <input
                     type="text"
