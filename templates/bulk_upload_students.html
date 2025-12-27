@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") != "admin" %}
+    <h3 style="color:red;">Unauthorized Access</h3>
+    <p>You do not have permission to upload students.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+
+{% else %}
+
+<div class="form-card">
+    <h2>Bulk Upload Students</h2>
+
+    <div class="alert alert-info">
+        <strong>ℹ️ Instructions:</strong>
+        <ul>
+            <li>Download the CSV template below</li>
+            <li>Fill in your student data following the format</li>
+            <li>Upload the CSV file to import all students at once</li>
+            <li>Maximum 1000 students per upload</li>
+        </ul>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        
+        <div class="form-group">
+            <label>CSV File Upload</label>
+            <input
+                type="file"
+                name="csv_file"
+                required
+                accept=".csv"
+            >
+            <small>Supported format: .csv (max 5MB)</small>
+        </div>
+
+        <div class="form-group">
+            <label>Encoding</label>
+            <select name="encoding" required>
+                <option value="utf-8">UTF-8 (Recommended)</option>
+                <option value="iso-8859-1">ISO-8859-1</option>
+                <option value="windows-1252">Windows-1252</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <input type="checkbox" name="skip_duplicates" id="skip_duplicates">
+            <label for="skip_duplicates">Skip duplicate email addresses</label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Upload Students</button>
+            <a href="{{ url_for('add_student') }}" class="btn btn-secondary">Cancel</a>
+            <a href="{{ url_for('download_csv_template') }}" class="btn btn-info">📥 Download Template</a>
+        </div>
+    </form>
+</div>
+
+{% endif %}
+
+{% endblock %}

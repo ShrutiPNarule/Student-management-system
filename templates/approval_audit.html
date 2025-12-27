@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card">
+    <h2>Approval Audit Report</h2>
+
+    <form method="GET" novalidate>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>From Date</label>
+                <input type="date" name="from_date" value="{{ request.args.get('from_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>To Date</label>
+                <input type="date" name="to_date" value="{{ request.args.get('to_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>Approver</label>
+                <input type="email" name="approver" placeholder="Filter by approver email" value="{{ request.args.get('approver', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">-- All --</option>
+                    <option value="approved" {% if request.args.get('status') == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if request.args.get('status') == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+            <button type="button" class="btn btn-info" onclick="downloadAudit()">📥 Download CSV</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">Approval Audit Trail</h3>
+    {% if audit_trail %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>Request ID</th>
+                <th>Type</th>
+                <th>Student</th>
+                <th>Approved By</th>
+                <th>Approval Date</th>
+                <th>Status</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in audit_trail %}
+            <tr>
+                <td>#{{ record[0] }}</td>
+                <td>{{ record[1] }}</td>
+                <td>{{ record[2] }}</td>
+                <td>{{ record[3] }}</td>
+                <td>{{ record[4] }}</td>
+                <td>
+                    <span style="padding: 3px 8px; border-radius: 3px; 
+                    {% if record[5] == 'approved' %}background: #d4edda; color: #155724;
+                    {% else %}background: #f8d7da; color: #721c24;{% endif %}">
+                        {{ record[5] }}
+                    </span>
+                </td>
+                <td>{{ record[6] or 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No approval records found.</p>
+    {% endif %}
+</div>
+
+<script>
+function downloadAudit() {
+    const fromDate = document.querySelector('input[name="from_date"]').value;
+    const toDate = document.querySelector('input[name="to_date"]').value;
+    window.location.href = `/download-approval-audit?from_date=${fromDate}&to_date=${toDate}`;
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

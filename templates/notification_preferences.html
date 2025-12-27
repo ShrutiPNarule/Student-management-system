@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") in ["superadmin", "admin"] %}
+
+<div class="form-card">
+    <h2>Notification Preferences</h2>
+
+    <form method="POST" novalidate>
+        
+        <h3>Email Notifications</h3>
+        <div class="form-group">
+            <input type="checkbox" name="email_approvals" id="email_approvals" {% if user_prefs.get('email_approvals') %}checked{% endif %}>
+            <label for="email_approvals">Notify me when approval requests are made</label>
+        </div>
+
+        <div class="form-group">
+            <input type="checkbox" name="email_approvals_completed" id="email_approvals_completed" {% if user_prefs.get('email_approvals_completed') %}checked{% endif %}>
+            <label for="email_approvals_completed">Notify me when approval requests are processed</label>
+        </div>
+
+        <div class="form-group">
+            <input type="checkbox" name="email_daily_summary" id="email_daily_summary" {% if user_prefs.get('email_daily_summary') %}checked{% endif %}>
+            <label for="email_daily_summary">Send me daily summary report</label>
+        </div>
+
+        <h3 style="margin-top: 30px;">SMS Notifications</h3>
+        <div class="form-group">
+            <input type="checkbox" name="sms_approvals" id="sms_approvals" {% if user_prefs.get('sms_approvals') %}checked{% endif %}>
+            <label for="sms_approvals">Notify via SMS on important actions</label>
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number for SMS</label>
+            <input type="tel" name="sms_phone" placeholder="+91..." value="{{ user_prefs.get('sms_phone', '') }}">
+        </div>
+
+        <h3 style="margin-top: 30px;">Notification Frequency</h3>
+        <div class="form-group">
+            <label>How often would you like to receive notifications?</label>
+            <select name="notification_frequency" required>
+                <option value="instant" {% if user_prefs.get('notification_frequency') == 'instant' %}selected{% endif %}>Instantly</option>
+                <option value="hourly" {% if user_prefs.get('notification_frequency') == 'hourly' %}selected{% endif %}>Hourly</option>
+                <option value="daily" {% if user_prefs.get('notification_frequency') == 'daily' %}selected{% endif %}>Daily</option>
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Preferences</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

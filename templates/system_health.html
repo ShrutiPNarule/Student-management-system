@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card">
+    <h2>System Health & Performance</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0;">
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1976d2;">
+            <h4>Database Status</h4>
+            <p style="font-size: 20px; color: #1976d2;">
+                <span id="db_status">🔄 Checking...</span>
+            </p>
+        </div>
+
+        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #7b1fa2;">
+            <h4>Active Users</h4>
+            <p style="font-size: 20px; color: #7b1fa2;">{{ active_users or 0 }}</p>
+        </div>
+
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #388e3c;">
+            <h4>API Response Time</h4>
+            <p style="font-size: 20px; color: #388e3c;"><span id="response_time">--</span> ms</p>
+        </div>
+
+        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #f57c00;">
+            <h4>Total Students</h4>
+            <p style="font-size: 20px; color: #f57c00;">{{ total_students or 0 }}</p>
+        </div>
+
+        <div style="background: #fce4ec; padding: 15px; border-radius: 8px; border-left: 4px solid #c2185b;">
+            <h4>Pending Approvals</h4>
+            <p style="font-size: 20px; color: #c2185b;">{{ pending_approvals or 0 }}</p>
+        </div>
+
+        <div style="background: #eceff1; padding: 15px; border-radius: 8px; border-left: 4px solid #37474f;">
+            <h4>Error Rate</h4>
+            <p style="font-size: 20px; color: #37474f;"><span id="error_rate">--</span>%</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 30px;">System Alerts</h3>
+    {% if alerts %}
+    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px;">
+        <ul>
+            {% for alert in alerts %}
+            <li>{{ alert }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <div style="background: #d4edda; border: 1px solid #28a745; border-radius: 4px; padding: 15px;">
+        <p>✅ All systems operational</p>
+    </div>
+    {% endif %}
+
+    <h3 style="margin-top: 30px;">Recent Errors</h3>
+    {% if recent_errors %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>Timestamp</th>
+                <th>Error Type</th>
+                <th>Message</th>
+                <th>User</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for error in recent_errors %}
+            <tr>
+                <td>{{ error[0] }}</td>
+                <td>{{ error[1] }}</td>
+                <td>{{ error[2] }}</td>
+                <td>{{ error[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<script>
+// Monitor system health in real-time
+async function checkSystemHealth() {
+    try {
+        const response = await fetch('/api/system-health');
+        const data = await response.json();
+        
+        document.getElementById('db_status').textContent = data.db_status ? '✅ Connected' : '❌ Error';
+        document.getElementById('response_time').textContent = data.response_time;
+        document.getElementById('error_rate').textContent = data.error_rate;
+    } catch (error) {
+        console.error('Error checking health:', error);
+    }
+}
+
+// Check every 30 seconds
+setInterval(checkSystemHealth, 30000);
+checkSystemHealth();
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

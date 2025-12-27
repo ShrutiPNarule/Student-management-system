@@ -18,7 +18,7 @@ try:
         port=os.getenv("DB_PORT", "5432"),
         connect_timeout=5
     )
-    print("[DB] ✅ Database connection established")
+    print("[DB] [OK] Database connection established")
 except Exception as e:
     print(f"[DB ERROR] Unable to connect: {e}")
     print(f"[DB ERROR] Attempted connection with:")

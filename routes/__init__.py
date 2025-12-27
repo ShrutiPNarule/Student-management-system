@@ -54,6 +54,13 @@ from .logout_route import *
 from .remove_logged_account import *
 from .resend_otp import *
 from .forgot_password import *
+from .change_password import *
+from .setup_2fa import *
+
+# Student Management
+from .bulk_upload import *
+from .search_students import *
+from .student_operations import *
 
 # Logs / audit
 from .log_route import *
@@ -62,7 +69,16 @@ from .log_route import *
 from .role_management import *
 from .manage_roles_route import *
 
-# Approvals
+# Approvals & Dashboard
 from .approval_route import *
-# Reports
+from .approval_dashboard import *
+
+# Reports & Analytics
 from .reports_route import *
+from .reports_analytics import *
+
+# Admin Management
+from .admin_management import *
+
+# System Monitoring
+from .system_health import *

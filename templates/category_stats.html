@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") in ["auditor", "superadmin"] %}
+
+<div class="form-card">
+    <h2>Category-wise Statistics</h2>
+
+    <form method="GET" novalidate>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Select Categories</label>
+                <div style="display: flex; gap: 15px; margin-top: 10px;">
+                    <input type="checkbox" name="categories" value="General" id="cat_general">
+                    <label for="cat_general">General</label>
+                    
+                    <input type="checkbox" name="categories" value="OBC" id="cat_obc">
+                    <label for="cat_obc">OBC</label>
+                    
+                    <input type="checkbox" name="categories" value="SC" id="cat_sc">
+                    <label for="cat_sc">SC</label>
+                    
+                    <input type="checkbox" name="categories" value="ST" id="cat_st">
+                    <label for="cat_st">ST</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate Statistics</button>
+            <button type="button" class="btn btn-info" onclick="downloadStats()">📥 Download</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">Statistics</h3>
+    {% if stats %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>Category</th>
+                <th>Total Count</th>
+                <th>Percentage</th>
+                <th>Average GPA</th>
+                <th>Pass Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat, data in stats.items() %}
+            <tr>
+                <td><strong>{{ cat }}</strong></td>
+                <td>{{ data.count }}</td>
+                <td>{{ data.percentage }}%</td>
+                <td>{{ data.avg_gpa }}</td>
+                <td>{{ data.pass_rate }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<script>
+function downloadStats() {
+    window.location.href = '/download-category-stats';
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

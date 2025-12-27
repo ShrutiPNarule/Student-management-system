@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card">
+    <h2>Audit Logs</h2>
+
+    <form method="GET" novalidate>
+        <div class="form-row">
+            <div class="form-group">
+                <label>From Date</label>
+                <input type="date" name="from_date" value="{{ request.args.get('from_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>To Date</label>
+                <input type="date" name="to_date" value="{{ request.args.get('to_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>User Email</label>
+                <input type="email" name="user_email" placeholder="Filter by user" value="{{ request.args.get('user_email', '') }}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Action Type</label>
+                <input type="text" name="action_type" placeholder="e.g., login, edit, delete" value="{{ request.args.get('action_type', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">-- All --</option>
+                    <option value="SUCCESS" {% if request.args.get('status') == 'SUCCESS' %}selected{% endif %}>Success</option>
+                    <option value="FAILURE" {% if request.args.get('status') == 'FAILURE' %}selected{% endif %}>Failure</option>
+                    <option value="ERROR" {% if request.args.get('status') == 'ERROR' %}selected{% endif %}>Error</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Filter Logs</button>
+            <a href="{{ url_for('audit_logs') }}" class="btn btn-secondary">Clear</a>
+            <button type="button" class="btn btn-info" onclick="downloadLogs()">📥 Download</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">Activity Logs</h3>
+    {% if logs %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Details</th>
+                <th>Status</th>
+                <th>IP Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log[0] }}</td>
+                <td>{{ log[1] }}</td>
+                <td>{{ log[2] }}</td>
+                <td>{{ log[3] }}</td>
+                <td>
+                    <span style="padding: 3px 8px; border-radius: 3px; 
+                    {% if log[4] == 'SUCCESS' %}background: #d4edda;
+                    {% elif log[4] == 'FAILURE' %}background: #f8d7da;
+                    {% else %}background: #fff3cd;{% endif %}">
+                        {{ log[4] }}
+                    </span>
+                </td>
+                <td>{{ log[5] or 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No logs found.</p>
+    {% endif %}
+</div>
+
+<script>
+function downloadLogs() {
+    const fromDate = document.querySelector('input[name="from_date"]').value;
+    const toDate = document.querySelector('input[name="to_date"]').value;
+    window.location.href = `/download-audit-logs?from_date=${fromDate}&to_date=${toDate}`;
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") in ["auditor", "superadmin"] %}
+
+<div class="form-card">
+    <h2>College-wise Report</h2>
+
+    <form method="GET" novalidate>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Select College</label>
+                <select name="college_name" required>
+                    <option value="">-- All Colleges --</option>
+                    {% for college in colleges %}
+                    <option value="{{ college }}" {% if request.args.get('college_name') == college %}selected{% endif %}>{{ college }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Metric</label>
+                <select name="metric">
+                    <option value="count">Total Students</option>
+                    <option value="avg_gpa">Average GPA</option>
+                    <option value="pass_rate">Pass Rate</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+            <button type="button" class="btn btn-info" onclick="exportReport()">📥 Export PDF</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">College Statistics</h3>
+    {% if report_data %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>College</th>
+                <th>Total Students</th>
+                <th>Average GPA</th>
+                <th>Pass Rate</th>
+                <th>Top Score</th>
+                <th>Low Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for college, data in report_data.items() %}
+            <tr>
+                <td><strong>{{ college }}</strong></td>
+                <td>{{ data.total }}</td>
+                <td>{{ data.avg_gpa }}</td>
+                <td>{{ data.pass_rate }}%</td>
+                <td>{{ data.top_score }}</td>
+                <td>{{ data.low_score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+
+<script>
+function exportReport() {
+    window.location.href = '/export-college-report';
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

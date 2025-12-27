@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") in ["auditor", "superadmin"] %}
+
+<div class="form-card">
+    <h2>Academic Performance Report</h2>
+
+    <form method="GET" novalidate>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Year/Semester</label>
+                <select name="semester" required>
+                    <option value="">-- Select --</option>
+                    <option value="1" {% if request.args.get('semester') == '1' %}selected{% endif %}>Semester 1</option>
+                    <option value="2" {% if request.args.get('semester') == '2' %}selected{% endif %}>Semester 2</option>
+                    <option value="3" {% if request.args.get('semester') == '3' %}selected{% endif %}>Semester 3</option>
+                    <option value="4" {% if request.args.get('semester') == '4' %}selected{% endif %}>Semester 4</option>
+                    <option value="5" {% if request.args.get('semester') == '5' %}selected{% endif %}>Semester 5</option>
+                    <option value="6" {% if request.args.get('semester') == '6' %}selected{% endif %}>Semester 6</option>
+                    <option value="7" {% if request.args.get('semester') == '7' %}selected{% endif %}>Semester 7</option>
+                    <option value="8" {% if request.args.get('semester') == '8' %}selected{% endif %}>Semester 8</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>College</label>
+                <input type="text" name="college" placeholder="Enter college name" value="{{ request.args.get('college', '') }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="checkbox" name="show_charts" id="show_charts" {% if request.args.get('show_charts') %}checked{% endif %}>
+            <label for="show_charts">Show Charts</label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+            <button type="button" class="btn btn-info" onclick="downloadReport()">📥 Download PDF</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">Report Metrics</h3>
+    {% if report_data %}
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+            <h4>Total Students</h4>
+            <p style="font-size: 24px; color: #1976d2;">{{ report_data.total_students }}</p>
+        </div>
+        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+            <h4>Average GPA</h4>
+            <p style="font-size: 24px; color: #7b1fa2;">{{ report_data.avg_gpa }}</p>
+        </div>
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+            <h4>Pass Rate</h4>
+            <p style="font-size: 24px; color: #388e3c;">{{ report_data.pass_rate }}%</p>
+        </div>
+        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+            <h4>Top Score</h4>
+            <p style="font-size: 24px; color: #f57c00;">{{ report_data.top_score }}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function downloadReport() {
+    const semester = document.querySelector('select[name="semester"]').value;
+    const college = document.querySelector('input[name="college"]').value;
+    window.location.href = `/download-academic-report?semester=${semester}&college=${college}`;
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

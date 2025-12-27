@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="form-card">
+    <h2>📊 Dashboard Summary</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0;">Total Students</h4>
+            <p style="font-size: 32px; margin: 10px 0;">{{ dashboard.total_students }}</p>
+            <small>Registered in system</small>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0;">Pending Approvals</h4>
+            <p style="font-size: 32px; margin: 10px 0;">{{ dashboard.pending_approvals }}</p>
+            <small>Waiting for approval</small>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0;">Active Users</h4>
+            <p style="font-size: 32px; margin: 10px 0;">{{ dashboard.active_users }}</p>
+            <small>Logged in today</small>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="margin: 0;">Recycle Bin</h4>
+            <p style="font-size: 32px; margin: 10px 0;">{{ dashboard.deleted_items }}</p>
+            <small>Items to restore</small>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- Recent Activities -->
+        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+            <h3>Recent Activities</h3>
+            {% if dashboard.recent_activities %}
+            <ul style="list-style: none; padding: 0;">
+                {% for activity in dashboard.recent_activities[:5] %}
+                <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                    <small style="color: #666;">{{ activity[0] }}</small>
+                    <p style="margin: 5px 0;">{{ activity[1] }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No recent activities.</p>
+            {% endif %}
+        </div>
+
+        <!-- Quick Stats -->
+        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+            <h3>Quick Statistics</h3>
+            <div style="display: flex; justify-content: space-around; text-align: center;">
+                <div>
+                    <p style="font-size: 24px; color: #007bff; margin: 0;">{{ dashboard.avg_gpa }}</p>
+                    <small>Average GPA</small>
+                </div>
+                <div>
+                    <p style="font-size: 24px; color: #28a745; margin: 0;">{{ dashboard.pass_rate }}%</p>
+                    <small>Pass Rate</small>
+                </div>
+                <div>
+                    <p style="font-size: 24px; color: #ffc107; margin: 0;">{{ dashboard.retention_rate }}%</p>
+                    <small>Retention Rate</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 30px;">Quick Actions</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+        {% if session.get("role") == "admin" %}
+        <a href="{{ url_for('add_student') }}" class="btn btn-primary">➕ Add Student</a>
+        <a href="{{ url_for('search_students') }}" class="btn btn-info">🔍 Search Students</a>
+        <a href="{{ url_for('bulk_upload_students') }}" class="btn btn-secondary">📤 Bulk Upload</a>
+        {% endif %}
+
+        {% if session.get("role") == "superadmin" %}
+        <a href="{{ url_for('approval_dashboard') }}" class="btn btn-primary">📋 Approvals</a>
+        <a href="{{ url_for('user_management') }}" class="btn btn-info">👥 Manage Users</a>
+        <a href="{{ url_for('audit_logs') }}" class="btn btn-secondary">📊 Audit Logs</a>
+        <a href="{{ url_for('system_health') }}" class="btn btn-danger">⚙️ System Health</a>
+        {% endif %}
+
+        {% if session.get("role") in ["auditor", "superadmin"] %}
+        <a href="{{ url_for('reports') }}" class="btn btn-info">📈 Reports</a>
+        <a href="{{ url_for('academic_report') }}" class="btn btn-secondary">📚 Academic Report</a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #007bff;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-info {
+    background: #17a2b8;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.btn-danger {
+    background: #dc3545;
+}
+</style>
+
+{% endblock %}

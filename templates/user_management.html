@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card">
+    <h2>User Management</h2>
+
+    <form method="GET" novalidate>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Search User</label>
+                <input type="text" name="search" placeholder="Name or Email" value="{{ request.args.get('search', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>Role Filter</label>
+                <select name="role_filter">
+                    <option value="">-- All Roles --</option>
+                    <option value="student" {% if request.args.get('role_filter') == 'student' %}selected{% endif %}>Student</option>
+                    <option value="admin" {% if request.args.get('role_filter') == 'admin' %}selected{% endif %}>Admin</option>
+                    <option value="auditor" {% if request.args.get('role_filter') == 'auditor' %}selected{% endif %}>Auditor</option>
+                    <option value="superadmin" {% if request.args.get('role_filter') == 'superadmin' %}selected{% endif %}>Superadmin</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status_filter">
+                    <option value="">-- All --</option>
+                    <option value="active" {% if request.args.get('status_filter') == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if request.args.get('status_filter') == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <button type="button" class="btn btn-info" onclick="exportUsers()">📥 Export List</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">Users</h3>
+    {% if users %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[2] }}</td>
+                <td>{{ user[4] }}</td>
+                <td>
+                    <span style="padding: 3px 8px; border-radius: 3px; 
+                    {% if user[5] == 'active' %}background: #d4edda; color: #155724;
+                    {% else %}background: #f8d7da; color: #721c24;{% endif %}">
+                        {{ user[5] }}
+                    </span>
+                </td>
+                <td>{{ user[6] or 'Never' }}</td>
+                <td>
+                    <a href="{{ url_for('change_role', user_id=user[0]) }}" class="btn btn-sm btn-info">Edit Role</a>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="toggleUserStatus({{ user[0] }})">
+                        {% if user[5] == 'active' %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No users found.</p>
+    {% endif %}
+</div>
+
+<script>
+function exportUsers() {
+    window.location.href = '/export-users';
+}
+
+function toggleUserStatus(userId) {
+    if (confirm('Are you sure?')) {
+        fetch(`/toggle-user-status/${userId}`, { method: 'POST' })
+            .then(response => location.reload())
+            .catch(error => alert('Error'));
+    }
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

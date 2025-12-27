@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="form-card">
+    <h2>Two-Factor Authentication Setup</h2>
+
+    {% if session.get("user_email") %}
+        <div class="alert alert-info">
+            <strong>⚠️ Important:</strong> Two-Factor Authentication adds an extra layer of security to your account.
+        </div>
+
+        <form method="POST" novalidate>
+            
+            <div class="form-section">
+                <h3>Step 1: Scan QR Code</h3>
+                <p>Use your authenticator app (Google Authenticator, Microsoft Authenticator, etc.) to scan this QR code:</p>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <div id="qrcode" style="display: inline-block; border: 2px solid #ddd; padding: 10px;">
+                        <p>QR Code will appear here</p>
+                    </div>
+                </div>
+
+                <p><strong>Can't scan?</strong> Enter this code manually:</p>
+                <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; word-break: break-all;">
+                    <input type="text" name="secret_key" id="secret_key" readonly style="width: 100%; border: none; background: transparent;">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Step 2: Verify Setup</h3>
+                <p>Enter the 6-digit code from your authenticator app:</p>
+                
+                <div class="form-group">
+                    <label>Verification Code</label>
+                    <input
+                        type="text"
+                        name="verification_code"
+                        required
+                        pattern="[0-9]{6}"
+                        maxlength="6"
+                        inputmode="numeric"
+                        placeholder="000000"
+                        title="Enter 6-digit code"
+                    >
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Step 3: Save Backup Codes</h3>
+                <p>Save these backup codes in a safe place. Use them if you lose access to your authenticator app:</p>
+                
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 4px; margin: 10px 0;">
+                    <div id="backup_codes" style="font-family: monospace; line-height: 1.8;">
+                        <p>Backup codes will appear after verification</p>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary" onclick="downloadBackupCodes()">📥 Download Backup Codes</button>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <input type="checkbox" name="backup_confirm" required id="backup_confirm">
+                <label for="backup_confirm">I have saved my backup codes in a safe place</label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Enable 2FA</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    {% else %}
+        <p style="color: red;">You must be logged in to setup 2FA.</p>
+        <a href="{{ url_for('login') }}" class="btn btn-primary">Go to Login</a>
+    {% endif %}
+</div>
+
+<script>
+function downloadBackupCodes() {
+    const codes = document.getElementById('backup_codes').innerText;
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(codes));
+    element.setAttribute('download', 'backup_codes.txt');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") in ["admin", "auditor"] %}
+
+<div class="form-card">
+    <h2>Attendance Report</h2>
+
+    <form method="GET" novalidate>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>From Date</label>
+                <input type="date" name="from_date" value="{{ request.args.get('from_date', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>To Date</label>
+                <input type="date" name="to_date" value="{{ request.args.get('to_date', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Attendance Threshold (%)</label>
+                <input type="number" name="threshold" min="0" max="100" placeholder="e.g., 75" value="{{ request.args.get('threshold', '') }}">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+            <button type="button" class="btn btn-info" onclick="downloadReport()">📥 Download Excel</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">Low Attendance Alerts</h3>
+    {% if low_attendance %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>Roll No</th>
+                <th>Name</th>
+                <th>Attendance %</th>
+                <th>Present Days</th>
+                <th>Absent Days</th>
+                <th>Leave Days</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in low_attendance %}
+            <tr>
+                <td>{{ student[0] }}</td>
+                <td>{{ student[1] }}</td>
+                <td style="color: #dc3545; font-weight: bold;">{{ student[2] }}%</td>
+                <td>{{ student[3] }}</td>
+                <td>{{ student[4] }}</td>
+                <td>{{ student[5] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No students with low attendance.</p>
+    {% endif %}
+</div>
+
+<script>
+function downloadReport() {
+    const fromDate = document.querySelector('input[name="from_date"]').value;
+    const toDate = document.querySelector('input[name="to_date"]').value;
+    window.location.href = `/download-attendance-report?from_date=${fromDate}&to_date=${toDate}`;
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

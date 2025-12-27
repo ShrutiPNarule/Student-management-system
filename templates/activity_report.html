@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card">
+    <h2>User Activity Report</h2>
+
+    <form method="GET" novalidate>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>From Date</label>
+                <input type="date" name="from_date" value="{{ request.args.get('from_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>To Date</label>
+                <input type="date" name="to_date" value="{{ request.args.get('to_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>User Email</label>
+                <input type="email" name="user_email" placeholder="Filter by user email" value="{{ request.args.get('user_email', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>Action Type</label>
+                <input type="text" name="action_type" placeholder="e.g., login, edit, delete" value="{{ request.args.get('action_type', '') }}">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+            <button type="button" class="btn btn-info" onclick="downloadActivity()">📥 Download CSV</button>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">User Activity Log</h3>
+    {% if activity_log %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f5f5f5;">
+                <th>Timestamp</th>
+                <th>User Email</th>
+                <th>Action</th>
+                <th>Details</th>
+                <th>IP Address</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for activity in activity_log %}
+            <tr>
+                <td>{{ activity[0] }}</td>
+                <td>{{ activity[1] }}</td>
+                <td>{{ activity[2] }}</td>
+                <td>{{ activity[3] }}</td>
+                <td>{{ activity[4] or 'N/A' }}</td>
+                <td>
+                    <span style="padding: 3px 8px; border-radius: 3px; 
+                    {% if activity[5] == 'SUCCESS' %}background: #d4edda;
+                    {% elif activity[5] == 'FAILURE' %}background: #f8d7da;
+                    {% else %}background: #fff3cd;{% endif %}">
+                        {{ activity[5] }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No activity records found.</p>
+    {% endif %}
+</div>
+
+<script>
+function downloadActivity() {
+    const fromDate = document.querySelector('input[name="from_date"]').value;
+    const toDate = document.querySelector('input[name="to_date"]').value;
+    window.location.href = `/download-activity-report?from_date=${fromDate}&to_date=${toDate}`;
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

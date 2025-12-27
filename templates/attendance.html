@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") != "admin" %}
+    <h3 style="color:red;">Unauthorized Access</h3>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+
+{% else %}
+
+<div class="form-card">
+    <h2>Student Attendance</h2>
+
+    {% if student %}
+        <h3>{{ student[1] }} - {{ student[2] }}</h3>
+        
+        <form method="POST" novalidate>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>From Date</label>
+                    <input
+                        type="date"
+                        name="from_date"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>To Date</label>
+                    <input
+                        type="date"
+                        name="to_date"
+                        required
+                    >
+                </div>
+            </div>
+
+            <h3>Attendance Records</h3>
+            <table border="1" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background-color: #f5f5f5;">
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(15) %}
+                    <tr>
+                        <td>
+                            <input type="date" name="date_{{ i }}" style="width: 100%;">
+                        </td>
+                        <td>
+                            <select name="status_{{ i }}" style="width: 100%;">
+                                <option value="">-- Select --</option>
+                                <option value="present">Present</option>
+                                <option value="absent">Absent</option>
+                                <option value="leave">Leave</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="remarks_{{ i }}" placeholder="Optional remarks" style="width: 100%;">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Attendance</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+        <h3 style="margin-top: 30px;">Attendance Summary</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+                <h4>Present</h4>
+                <p style="font-size: 24px; color: #4caf50;">{{ attendance_summary.present or 0 }}</p>
+            </div>
+            <div style="background: #ffebee; padding: 15px; border-radius: 8px; text-align: center;">
+                <h4>Absent</h4>
+                <p style="font-size: 24px; color: #f44336;">{{ attendance_summary.absent or 0 }}</p>
+            </div>
+            <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+                <h4>Leave</h4>
+                <p style="font-size: 24px; color: #ff9800;">{{ attendance_summary.leave or 0 }}</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+            <strong>Attendance Percentage:</strong> {{ attendance_summary.percentage or 0 }}%
+        </div>
+
+    {% else %}
+        <p style="color: red;">Student not found.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+    {% endif %}
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card">
+    <h2>Bulk Approval</h2>
+
+    <form method="POST" novalidate>
+        <h3>Select Requests to Approve</h3>
+        
+        <table border="1" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+                <tr style="background-color: #f5f5f5;">
+                    <th><input type="checkbox" id="select_all" onchange="toggleAll(this)"></th>
+                    <th>Request ID</th>
+                    <th>Type</th>
+                    <th>Student</th>
+                    <th>Requested By</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in pending_requests %}
+                <tr>
+                    <td>
+                        <input type="checkbox" name="request_ids" value="{{ request[0] }}" class="request-checkbox">
+                    </td>
+                    <td>#{{ request[0] }}</td>
+                    <td>{{ request[2] }}</td>
+                    <td>{{ request[3] }}</td>
+                    <td>{{ request[4] }}</td>
+                    <td>{{ request[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="form-group">
+            <label>Common Approval Notes (Optional)</label>
+            <textarea name="approval_notes" rows="3" placeholder="Notes for all selected approvals"></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Approve Selected</button>
+            <a href="{{ url_for('view_approvals') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.request-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+}
+</script>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

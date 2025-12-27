@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card">
+    <h2>Request History & Timeline</h2>
+
+    <form method="GET" novalidate>
+        <div class="form-row">
+            <div class="form-group">
+                <label>From Date</label>
+                <input type="date" name="from_date" value="{{ request.args.get('from_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>To Date</label>
+                <input type="date" name="to_date" value="{{ request.args.get('to_date', '') }}">
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">-- All --</option>
+                    <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if request.args.get('status') == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if request.args.get('status') == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Type</label>
+                <select name="type">
+                    <option value="">-- All --</option>
+                    <option value="edit" {% if request.args.get('type') == 'edit' %}selected{% endif %}>Edit</option>
+                    <option value="delete" {% if request.args.get('type') == 'delete' %}selected{% endif %}>Delete</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{{ url_for('request_timeline') }}" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+
+    <h3 style="margin-top: 30px;">Request Timeline</h3>
+    {% if requests %}
+    <div style="position: relative; padding: 20px;">
+        {% for req in requests %}
+        <div style="display: flex; margin-bottom: 30px;">
+            <div style="width: 100px; text-align: center;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: 
+                {% if req[6] == 'pending' %}#ffc107
+                {% elif req[6] == 'approved' %}#28a745
+                {% else %}#dc3545{% endif %}; 
+                margin: 0 auto; margin-bottom: 10px;"></div>
+                <small>{{ req[5][:10] }}</small>
+            </div>
+            <div style="flex: 1; padding-left: 20px; border-left: 2px solid #ddd;">
+                <h5>{{ req[2] | upper }} Request</h5>
+                <p><strong>Student:</strong> {{ req[3] }}</p>
+                <p><strong>Requested by:</strong> {{ req[4] }}</p>
+                <p><strong>Status:</strong> 
+                    <span style="padding: 3px 8px; border-radius: 3px; 
+                    {% if req[6] == 'pending' %}background: #fff3cd;
+                    {% elif req[6] == 'approved' %}background: #d4edda;
+                    {% else %}background: #f8d7da;{% endif %}">
+                        {{ req[6] }}
+                    </span>
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No requests found.</p>
+    {% endif %}
+</div>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+{% endif %}
+
+{% endblock %}

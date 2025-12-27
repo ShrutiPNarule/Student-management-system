@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") != "admin" %}
+    <h3 style="color:red;">Unauthorized Access</h3>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+
+{% else %}
+
+<div class="form-card">
+    <h2>Update Student Marks</h2>
+
+    {% if student %}
+        <form method="POST" novalidate>
+            
+            <h3>School Marks</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>10th Marks</label>
+                    <input
+                        type="number"
+                        name="marks_10th"
+                        value="{{ student[6] }}"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>12th Marks</label>
+                    <input
+                        type="number"
+                        name="marks_12th"
+                        value="{{ student[7] }}"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                    >
+                </div>
+            </div>
+
+            <h3>College Marks</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Year 1 Marks</label>
+                    <input
+                        type="number"
+                        name="marks_year1"
+                        value="{{ student[8] }}"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Year 2 Marks</label>
+                    <input
+                        type="number"
+                        name="marks_year2"
+                        value="{{ student[9] }}"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Year 3 Marks</label>
+                    <input
+                        type="number"
+                        name="marks_year3"
+                        value="{{ student[10] }}"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Year 4 Marks</label>
+                    <input
+                        type="number"
+                        name="marks_year4"
+                        value="0"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                    >
+                </div>
+            </div>
+
+            <h3>GPA</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Current GPA</label>
+                    <input
+                        type="number"
+                        name="gpa"
+                        value="{{ student[11] }}"
+                        min="0"
+                        max="10"
+                        step="0.01"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Semester/Year</label>
+                    <select name="semester">
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                        <option value="7">Semester 7</option>
+                        <option value="8">Semester 8</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Update Reason (Optional)</label>
+                <textarea name="reason" rows="3" placeholder="Why are you updating marks?"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Update Marks</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    {% else %}
+        <p style="color: red;">Student not found.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+    {% endif %}
+</div>
+
+{% endif %}
+
+{% endblock %}
