@@ -74,18 +74,33 @@ def reports():
 @app.route("/generate-report", methods=["POST"])
 def generate_report():
     """Generate filtered report and return as PDF"""
+    # Authentication check
     if "user_email" not in session:
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    role = session.get("role")
-    
-    # Only admin and superadmin can access reports
-    if role not in ("admin", "superadmin"):
+    if session.get("role") not in ("admin", "superadmin"):
         abort(403)
 
-    # Get filter parameters from form
-    filters = {
+    # Extract filters
+    filters = _extract_filters()
+    
+    # Fetch filtered student data
+    students = _fetch_filtered_students(filters)
+    
+    # Generate and return PDF
+    pdf_buffer = _generate_pdf(students, filters)
+    return send_file(
+        pdf_buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f"student_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    )
+
+
+def _extract_filters():
+    """Extract filter parameters from form request"""
+    return {
         "marks_10th_min": request.form.get("marks_10th_min", ""),
         "marks_10th_max": request.form.get("marks_10th_max", ""),
         "marks_12th_min": request.form.get("marks_12th_min", ""),
@@ -98,30 +113,18 @@ def generate_report():
         "current_status": request.form.get("current_status", ""),
     }
 
-    # Build dynamic SQL query based on filters
+
+def _fetch_filtered_students(filters):
+    """Fetch students based on applied filters"""
     conn = get_connection()
     cur = conn.cursor()
 
     query = """
         SELECT 
-            s.id,
-            u.name,
-            s.enrollment_no,
-            u.email,
-            u.phone,
-            u.address,
-            m.marks_10th,
-            m.marks_12th,
-            m.marks1,
-            m.marks2,
-            m.marks3,
-            m.marks4,
-            sc.name as school_name,
-            sc.board,
-            sc.state as school_state,
-            cl.name as college_name,
-            cl.institute_type,
-            cl.state as college_state,
+            s.id, u.name, s.enrollment_no, u.email, u.phone, u.address,
+            m.marks_10th, m.marks_12th, m.marks1, m.marks2, m.marks3, m.marks4,
+            sc.name as school_name, sc.board, sc.state as school_state,
+            cl.name as college_name, cl.institute_type, cl.state as college_state,
             s.current_status
         FROM students_master s
         LEFT JOIN users_master u ON s.user_id = u.id
@@ -134,93 +137,99 @@ def generate_report():
     """
     
     params = []
-
-    # Apply filters
-    if filters["marks_10th_min"]:
-        try:
-            min_val = int(filters["marks_10th_min"])
-            query += " AND m.marks_10th >= %s"
-            params.append(min_val)
-        except:
-            pass
-
-    if filters["marks_10th_max"]:
-        try:
-            max_val = int(filters["marks_10th_max"])
-            query += " AND m.marks_10th <= %s"
-            params.append(max_val)
-        except:
-            pass
-
-    if filters["marks_12th_min"]:
-        try:
-            min_val = int(filters["marks_12th_min"])
-            query += " AND m.marks_12th >= %s"
-            params.append(min_val)
-        except:
-            pass
-
-    if filters["marks_12th_max"]:
-        try:
-            max_val = int(filters["marks_12th_max"])
-            query += " AND m.marks_12th <= %s"
-            params.append(max_val)
-        except:
-            pass
-
+    
+    # Apply numeric filters
+    _add_numeric_filter(query, params, filters, "marks_10th_min", "m.marks_10th", ">=")
+    _add_numeric_filter(query, params, filters, "marks_10th_max", "m.marks_10th", "<=")
+    _add_numeric_filter(query, params, filters, "marks_12th_min", "m.marks_12th", ">=")
+    _add_numeric_filter(query, params, filters, "marks_12th_max", "m.marks_12th", "<=")
+    
+    # Apply string filters
     if filters["school_id"]:
         query += " AND ssh.school_id = %s"
         params.append(filters["school_id"])
-
+    
     if filters["college_id"]:
         query += " AND ce.college_id = %s"
         params.append(filters["college_id"])
-
+    
     if filters["state"]:
         query += " AND (sc.state = %s OR cl.state = %s)"
-        params.append(filters["state"])
-        params.append(filters["state"])
-
+        params.extend([filters["state"], filters["state"]])
+    
     if filters["board"]:
         query += " AND sc.board = %s"
         params.append(filters["board"])
-
+    
     if filters["college_type"]:
         query += " AND cl.institute_type = %s"
         params.append(filters["college_type"])
-
+    
     if filters["current_status"]:
         query += " AND s.current_status = %s"
         params.append(filters["current_status"])
 
     query += " ORDER BY u.name;"
-
+    
     cur.execute(query, params)
     students = cur.fetchall()
     cur.close()
+    
+    return students
 
-    # Generate PDF
+
+def _add_numeric_filter(query, params, filters, filter_key, field_name, operator):
+    """Helper to add numeric filter to query"""
+    if filters[filter_key]:
+        try:
+            value = int(filters[filter_key])
+            query += f" AND {field_name} {operator} %s"
+            params.append(value)
+        except (ValueError, TypeError):
+            pass
+
+
+def _generate_pdf(students, filters):
+    """Generate PDF document with report"""
     pdf_buffer = BytesIO()
     doc = SimpleDocTemplate(pdf_buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
     
     elements = []
     styles = getSampleStyleSheet()
     
-    # Title
+    # Add title
+    _add_title(elements, styles)
+    
+    # Add report info
+    _add_report_info(elements, styles, filters)
+    
+    # Add table
+    _add_data_table(elements, styles, students)
+    
+    # Add footer
+    _add_footer(elements, styles, len(students))
+    
+    doc.build(elements)
+    pdf_buffer.seek(0)
+    
+    return pdf_buffer
+
+
+def _add_title(elements, styles):
+    """Add report title"""
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
         fontSize=16,
         textColor=colors.HexColor('#1a3a52'),
         spaceAfter=10,
-        alignment=1  # Center alignment
+        alignment=1
     )
-    
-    title = Paragraph("Student Report", title_style)
-    elements.append(title)
-    
-    # Report generated date and filters applied
-    report_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    elements.append(Paragraph("Student Report", title_style))
+
+
+def _add_report_info(elements, styles, filters):
+    """Add report generation date and applied filters"""
     info_style = ParagraphStyle(
         'Info',
         parent=styles['Normal'],
@@ -229,101 +238,106 @@ def generate_report():
         spaceAfter=5
     )
     
+    report_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     filter_text = f"<b>Report Generated:</b> {report_date}"
+    
     if any(filters.values()):
         filter_text += "<br/><b>Filters Applied:</b> "
-        filter_descriptions = []
-        if filters["marks_10th_min"]:
-            filter_descriptions.append(f"10th Marks Min: {filters['marks_10th_min']}")
-        if filters["marks_10th_max"]:
-            filter_descriptions.append(f"10th Marks Max: {filters['marks_10th_max']}")
-        if filters["marks_12th_min"]:
-            filter_descriptions.append(f"12th Marks Min: {filters['marks_12th_min']}")
-        if filters["marks_12th_max"]:
-            filter_descriptions.append(f"12th Marks Max: {filters['marks_12th_max']}")
-        if filters["school_id"]:
-            filter_descriptions.append(f"School: {filters['school_id']}")
-        if filters["college_id"]:
-            filter_descriptions.append(f"College: {filters['college_id']}")
-        if filters["state"]:
-            filter_descriptions.append(f"State: {filters['state']}")
-        if filters["board"]:
-            filter_descriptions.append(f"Board: {filters['board']}")
-        if filters["college_type"]:
-            filter_descriptions.append(f"College Type: {filters['college_type']}")
-        if filters["current_status"]:
-            filter_descriptions.append(f"Status: {filters['current_status']}")
+        filter_descriptions = _build_filter_descriptions(filters)
         filter_text += ", ".join(filter_descriptions)
     
     elements.append(Paragraph(filter_text, info_style))
     elements.append(Spacer(1, 0.3*inch))
 
-    # Table data
-    table_data = [
-        ["Name", "Email", "Phone", "10th Marks", "12th Marks", "School", "College", "Status"]
-    ]
 
+def _build_filter_descriptions(filters):
+    """Build human-readable filter descriptions"""
+    descriptions = []
+    filter_labels = {
+        "marks_10th_min": "10th Marks Min",
+        "marks_10th_max": "10th Marks Max",
+        "marks_12th_min": "12th Marks Min",
+        "marks_12th_max": "12th Marks Max",
+        "school_id": "School",
+        "college_id": "College",
+        "state": "State",
+        "board": "Board",
+        "college_type": "College Type",
+        "current_status": "Status",
+    }
+    
+    for key, label in filter_labels.items():
+        if filters[key]:
+            descriptions.append(f"{label}: {filters[key]}")
+    
+    return descriptions
+
+
+def _add_data_table(elements, styles, students):
+    """Add student data table to report"""
+    table_data = [["Name", "Email", "Phone", "10th Marks", "12th Marks", "School", "College", "Status"]]
+    
     for student in students:
-        name = student[1] or "N/A"
-        email = student[3] or "N/A"
-        phone = student[4] or "N/A"
-        marks_10th = student[6] or "N/A"
-        marks_12th = student[7] or "N/A"
-        school_name = student[12] or "N/A"
-        college_name = student[15] or "N/A"
-        status = student[18] or "N/A"
-
         table_data.append([
-            str(name)[:20],
-            str(email)[:20],
-            str(phone)[:12],
-            str(marks_10th),
-            str(marks_12th),
-            str(school_name)[:15],
-            str(college_name)[:15],
-            str(status)
+            str(student[1] or "N/A")[:20],
+            str(student[3] or "N/A")[:20],
+            str(student[4] or "N/A")[:12],
+            str(student[6] or "N/A"),
+            str(student[7] or "N/A"),
+            str(student[12] or "N/A")[:15],
+            str(student[15] or "N/A")[:15],
+            str(student[18] or "N/A")
         ])
 
-    # Create table with styling
     if len(table_data) > 1:
-        table = Table(table_data, colWidths=[1.0*inch, 1.1*inch, 0.9*inch, 0.8*inch, 0.8*inch, 1.0*inch, 1.0*inch, 0.8*inch])
-        
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3a52')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 9),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-            ('FONTSIZE', (0, 1), (-1, -1), 8),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f0f0')]),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ]))
-        
-        elements.append(table)
+        _add_styled_table(elements, table_data)
     else:
-        no_data_style = ParagraphStyle(
-            'NoData',
-            parent=styles['Normal'],
-            fontSize=11,
-            textColor=colors.red,
-            alignment=1
-        )
-        elements.append(Paragraph("No students found matching the selected filters.", no_data_style))
+        _add_no_data_message(elements, styles)
 
-    # Footer
-    elements.append(Spacer(1, 0.3*inch))
-    footer_text = f"<i>Total Records: {len(table_data) - 1}</i>"
-    elements.append(Paragraph(footer_text, info_style))
 
-    # Build PDF
-    doc.build(elements)
-    pdf_buffer.seek(0)
-
-    return send_file(
-        pdf_buffer,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=f"student_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+def _add_styled_table(elements, table_data):
+    """Create and style data table"""
+    table = Table(
+        table_data,
+        colWidths=[1.0*inch, 1.1*inch, 0.9*inch, 0.8*inch, 0.8*inch, 1.0*inch, 1.0*inch, 0.8*inch]
     )
+    
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3a52')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f0f0')]),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+
+
+def _add_no_data_message(elements, styles):
+    """Add message when no data found"""
+    no_data_style = ParagraphStyle(
+        'NoData',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.red,
+        alignment=1
+    )
+    elements.append(Paragraph("No students found matching the selected filters.", no_data_style))
+
+
+def _add_footer(elements, styles, record_count):
+    """Add report footer with record count"""
+    info_style = ParagraphStyle(
+        'Info',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.grey,
+        spaceAfter=5
+    )
+    elements.append(Spacer(1, 0.3*inch))
+    elements.append(Paragraph(f"<i>Total Records: {record_count}</i>", info_style))

@@ -73,18 +73,41 @@ def update_student_data(student_id):
             return redirect(url_for("update_student_data", student_id=student_id))
 
         try:
-            # ---------- DUPLICATE CHECK (EXCEPT SELF) ----------
-            # Check for duplicate enrollment_no or email in users_master
+            # ---------- GET CURRENT STUDENT'S USER ID ----------
             cur.execute("""
-                SELECT 1 FROM students_master s
-                JOIN users_master u ON s.user_id = u.id
-                WHERE (s.enrollment_no = %s OR u.email = %s)
-                  AND s.id != %s
-                  AND s.is_deleted = FALSE
-            """, (roll_no, email, student_id))
-
+                SELECT user_id FROM students_master WHERE id = %s AND is_deleted = FALSE
+            """, (student_id,))
+            current_user_result = cur.fetchone()
+            if not current_user_result:
+                flash("Student not found.", "error")
+                conn.rollback()
+                cur.close()
+                return redirect(url_for("index"))
+            
+            current_user_id = current_user_result[0]
+            
+            # ---------- DUPLICATE CHECK (EXCEPT SELF) ----------
+            # Check enrollment_no (only if different from current)
+            cur.execute("""
+                SELECT id FROM students_master
+                WHERE enrollment_no = %s
+                  AND id != %s
+                  AND is_deleted = FALSE
+            """, (roll_no, student_id))
+            
             if cur.fetchone():
-                flash("Roll number or email already exists.", "error")
+                flash("Roll number already exists for another student.", "error")
+                return redirect(url_for("update_student_data", student_id=student_id))
+            
+            # Check email (only if different from current user's email)
+            cur.execute("""
+                SELECT id FROM users_master
+                WHERE email = %s
+                  AND id != %s
+            """, (email, current_user_id))
+            
+            if cur.fetchone():
+                flash("Email already exists for another user.", "error")
                 return redirect(url_for("update_student_data", student_id=student_id))
 
             # Get admin's user ID
@@ -117,6 +140,10 @@ def update_student_data(student_id):
                 "marks4": marks4
             }
 
+            print(f"[EDIT REQUEST] Creating approval request for student {student_id}")
+            print(f"[EDIT REQUEST] Admin ID: {admin_id}")
+            print(f"[EDIT REQUEST] Action data: {action_data}")
+            
             # Create approval request instead of directly updating
             cur.execute("""
                 INSERT INTO admin_approval_requests 
@@ -125,6 +152,7 @@ def update_student_data(student_id):
             """, (admin_id, "EDIT", "STUDENT", student_id, json.dumps(action_data), "pending"))
 
             conn.commit()
+            print(f"[EDIT REQUEST] Approval request created successfully for student {student_id}")
             
             # Log the action
             log_action("REQUEST_EDIT", "STUDENT", str(student_id), {"requested_by": admin_id})
@@ -136,7 +164,11 @@ def update_student_data(student_id):
             print(f"[EDIT ERROR] Database Error: {e}")
             print(f"[EDIT ERROR] Error Code: {e.pgcode}")
             print(f"[EDIT ERROR] Error Details: {e.pgerror}")
-            flash("Database error occurred. Please try again.", "error")
+            flash(f"Database error occurred: {e.pgerror}", "error")
+        except Exception as e:
+            conn.rollback()
+            print(f"[EDIT ERROR] Unexpected Error: {e}")
+            flash(f"An error occurred: {str(e)}", "error")
 
         finally:
             cur.close()

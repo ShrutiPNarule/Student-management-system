@@ -44,6 +44,7 @@ cur.execute("CREATE SEQUENCE IF NOT EXISTS enrollment_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS school_history_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS college_subject_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS activity_seq START 1;")
+cur.execute("CREATE SEQUENCE IF NOT EXISTS approval_seq START 1;")
 
 # =========================
 # MASTER TABLES
@@ -239,7 +240,7 @@ CREATE TABLE IF NOT EXISTS student_marks (
 cur.execute("""
 CREATE TABLE IF NOT EXISTS admin_approval_requests (
     id TEXT PRIMARY KEY DEFAULT
-        'AR' || LPAD(nextval('activity_seq')::TEXT, 6, '0'),
+        'AR' || LPAD(nextval('approval_seq')::TEXT, 6, '0'),
     admin_id TEXT NOT NULL REFERENCES users_master(id) ON DELETE CASCADE,
     request_type TEXT NOT NULL,
     entity_type TEXT NOT NULL,
