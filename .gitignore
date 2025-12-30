@@ -1,3 +1,18 @@
 __pycache__
 .env
 temp.py
+
+# Temporary migration scripts
+add_8_semesters.py
+migrate_to_8_semesters.py
+fix_attendance_table.py
+create_scholarships_table.py
+create_documents_table.py
+
+# Upload directory
+uploads/
+uploads/*
+
+# Python cache
+*.pyc
+.pytest_cache
