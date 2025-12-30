@@ -16,9 +16,9 @@
             <li><a href="{{ url_for('index') }}">Home</a></li>
         {% endif %}
 
-        <!-- ADMIN: Add Student -->
-        {% if session.get("role") == "admin" %}
-            <li><a href="{{ url_for('add_student') }}">Add Student</a></li>
+        <!-- Student Search (Admin, Auditor, Superadmin) -->
+        {% if session.get("role") in ["admin", "auditor", "superadmin"] %}
+            <li><a href="{{ url_for('search_students') }}">🔍 Search</a></li>
         {% endif %}
 
         <!-- ADMIN & SUPERADMIN: Reports -->
@@ -26,26 +26,46 @@
             <li><a href="{{ url_for('reports') }}">📊 Reports</a></li>
         {% endif %}
 
-        <!-- SUPERADMIN: View Approvals & Change Roles -->
-        {% if session.get("role") == "superadmin" %}
-            <li><a href="{{ url_for('view_approvals') }}">📋 Approvals</a></li>
-            <li><a href="{{ url_for('manage_roles') }}">👥 Change Roles</a></li>
-        {% endif %}
-
-        <!-- AUDITOR: Recycle Bin + Logs -->
-        {% if session.get("role") == "auditor" %}
-            <li><a href="{{ url_for('recycle_bin') }}">Recycle Bin</a></li>
-            <li><a href="{{ url_for('logs') }}">Activity Logs</a></li>
-        {% endif %}
-
+        <!-- User Profile Dropdown Icon (Right aligned) -->
         {% if session.get("user_email") %}
-            <!-- Logged-in user info -->
             <li style="margin-left:auto;">
-                <span>👤 {{ session.get("user_email") }} ({{ session.get("role") }})</span>
-            </li>
+                <div class="user-menu-dropdown" id="userMenuDropdown">
+                    <button class="user-icon-btn" onclick="toggleUserMenu(event)">👤</button>
+                    <div class="user-dropdown-content" id="userDropdownContent">
+                        <div class="dropdown-header">
+                            <strong>{{ session.get("user_email") }}</strong>
+                            <span class="role-badge">{{ session.get("role") }}</span>
+                        </div>
+                        <hr class="dropdown-divider">
+                        
+                        <!-- ADMIN OPTIONS -->
+                        {% if session.get("role") == "admin" %}
+                            <a href="{{ url_for('add_student') }}">➕ Add Student</a>
+                            <a href="{{ url_for('bulk_upload_students') }}">📤 Bulk Upload</a>
+                            <hr class="dropdown-divider">
+                        {% endif %}
 
-            <li><a href="{{ url_for('remove_logged_account') }}" style="color: #dc3545;">🗑️ Delete Account</a></li>
-            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                        <!-- SUPERADMIN OPTIONS -->
+                        {% if session.get("role") == "superadmin" %}
+                            <a href="{{ url_for('view_approvals') }}">📋 Approvals</a>
+                            <a href="{{ url_for('manage_roles') }}">👥 Change Roles</a>
+                            <hr class="dropdown-divider">
+                        {% endif %}
+
+                        <!-- AUDITOR OPTIONS -->
+                        {% if session.get("role") == "auditor" %}
+                            <a href="{{ url_for('recycle_bin') }}">🗑️ Recycle Bin</a>
+                            <a href="{{ url_for('logs') }}">📝 Activity Logs</a>
+                            <hr class="dropdown-divider">
+                        {% endif %}
+
+                        <!-- COMMON OPTIONS -->
+                        <a href="{{ url_for('setup_2fa') }}">⚙️ Settings (2FA)</a>
+                        <a href="{{ url_for('remove_logged_account') }}" class="danger-link">🗑️ Delete Account</a>
+                        <a href="{{ url_for('logout') }}">🚪 Logout</a>
+                    </div>
+                </div>
+            </li>
         {% else %}
             <!-- Not logged in -->
             <li style="margin-left:auto;">
@@ -66,6 +86,30 @@
 
     {% block content %}{% endblock %}
 </div>
+
+<script>
+    function toggleUserMenu(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const dropdown = document.getElementById('userDropdownContent');
+        dropdown.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('userMenuDropdown');
+        if (dropdown && !dropdown.contains(event.target)) {
+            document.getElementById('userDropdownContent').classList.remove('active');
+        }
+    });
+
+    // Close dropdown when a link is clicked
+    document.querySelectorAll('.user-dropdown-content a').forEach(link => {
+        link.addEventListener('click', function() {
+            document.getElementById('userDropdownContent').classList.remove('active');
+        });
+    });
+</script>
 
 </body>
 </html>

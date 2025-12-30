@@ -272,6 +272,111 @@ CREATE TABLE IF NOT EXISTS activity_log (
 """)
 
 # =========================
+# ATTENDANCE RECORDS TABLE
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS attendance_records (
+    id SERIAL PRIMARY KEY,
+    student_id TEXT REFERENCES students_master(id) ON DELETE CASCADE,
+    attendance_month DATE NOT NULL,
+    present_days INTEGER DEFAULT 0,
+    absent_days INTEGER DEFAULT 0,
+    leave_days INTEGER DEFAULT 0,
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(student_id, attendance_month)
+);
+""")
+
+# =========================
+# SCHOLARSHIPS TABLE
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS scholarships (
+    id SERIAL PRIMARY KEY,
+    student_id TEXT REFERENCES students_master(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    amount DECIMAL(10, 2) DEFAULT 0,
+    start_date DATE,
+    end_date DATE,
+    provider TEXT,
+    status TEXT CHECK (status IN ('active', 'inactive', 'completed', 'pending')),
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# =========================
+# STUDENT DOCUMENTS TABLE
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS student_documents (
+    id SERIAL PRIMARY KEY,
+    student_id TEXT REFERENCES students_master(id) ON DELETE CASCADE,
+    document_type TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    file_path TEXT,
+    issue_date DATE,
+    expiry_date DATE,
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# =========================
+# STUDENTS DATA VIEW
+# =========================
+# This view provides a unified interface for accessing student information
+cur.execute("""
+DROP VIEW IF EXISTS students_data CASCADE;
+""")
+
+cur.execute("""
+CREATE VIEW students_data AS
+SELECT 
+    sm.id,
+    COALESCE(um.name, '') AS name,
+    COALESCE(sm.enrollment_no, '') AS roll_no,
+    COALESCE(um.address, '') AS address,
+    COALESCE(um.phone, '') AS phone,
+    COALESCE(um.email, '') AS email,
+    COALESCE(cc.name, '') AS college,
+    COALESCE(um.category, 'General') AS category,
+    COALESCE(um.dob::TEXT, '') AS dob,
+    COALESCE(sm.current_status, 'Active') AS status,
+    COALESCE(sm1.marks_10th, 0) AS marks_10th,
+    COALESCE(sm1.marks_12th, 0) AS marks_12th,
+    COALESCE(sm1.marks1, 0) AS marks1,
+    COALESCE(sm1.marks2, 0) AS marks2,
+    COALESCE(sm1.marks3, 0) AS marks3,
+    COALESCE(sm1.marks4, 0) AS marks4,
+    COALESCE(sm1.marks5, 0) AS marks5,
+    COALESCE(sm1.marks6, 0) AS marks6,
+    COALESCE(sm1.marks7, 0) AS marks7,
+    COALESCE(sm1.marks8, 0) AS marks8,
+    CASE 
+        WHEN sm1.marks1 > 0 OR sm1.marks2 > 0 OR sm1.marks3 > 0 OR sm1.marks4 > 0 OR 
+             sm1.marks5 > 0 OR sm1.marks6 > 0 OR sm1.marks7 > 0 OR sm1.marks8 > 0
+        THEN ROUND((COALESCE(sm1.marks1, 0) + COALESCE(sm1.marks2, 0) + 
+                    COALESCE(sm1.marks3, 0) + COALESCE(sm1.marks4, 0) +
+                    COALESCE(sm1.marks5, 0) + COALESCE(sm1.marks6, 0) + 
+                    COALESCE(sm1.marks7, 0) + COALESCE(sm1.marks8, 0))::NUMERIC / 8, 2)
+        ELSE 0
+    END AS gpa,
+    sm.created_at
+FROM 
+    students_master sm
+LEFT JOIN users_master um ON sm.user_id = um.id
+LEFT JOIN college_enrollment ce ON sm.id = ce.student_id
+LEFT JOIN colleges_master cc ON ce.college_id = cc.id
+LEFT JOIN student_marks sm1 ON sm.id = sm1.student_id
+WHERE sm.is_deleted = FALSE;
+""")
+
+# =========================
 # COMMIT
 # =========================
 conn.commit()

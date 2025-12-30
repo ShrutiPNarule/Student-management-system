@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="form-card">
+    <h2>Restore Student Record</h2>
+
+    {% if student %}
+        <div class="student-details-box">
+            <p style="margin: 10px 0;"><strong>Student ID:</strong> {{ student[0] }}</p>
+            <p style="margin: 10px 0;"><strong>Name:</strong> {{ student[1] }}</p>
+            <p style="margin: 10px 0;"><strong>Roll No:</strong> {{ student[2] }}</p>
+            <p style="margin: 10px 0;"><strong>Email:</strong> {{ student[3] }}</p>
+        </div>
+
+        <div style="margin: 30px 0; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+            <strong>⚠️ Confirm Restore:</strong>
+            <p>This will restore the student record and make it active again in the system. All associated data will be recovered.</p>
+        </div>
+
+        <form method="POST" style="margin: 30px 0;">
+            <div style="margin: 15px 0;">
+                <label>
+                    <input type="checkbox" name="confirm" value="yes" required>
+                    I confirm that I want to restore this student record
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success">✓ Restore Record</button>
+                <a href="{{ url_for('recycle_bin') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    {% else %}
+        <p style="color: red;">Student not found.</p>
+        <a href="{{ url_for('recycle_bin') }}" class="btn btn-secondary">Back to Recycle Bin</a>
+    {% endif %}
+</div>
+
+<style>
+.form-card {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+.form-card h2 {
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.student-details-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #007bff;
+}
+
+.student-details-box p {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+</style>
+
+{% endblock %}

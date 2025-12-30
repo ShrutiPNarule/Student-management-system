@@ -31,12 +31,10 @@ def add_student():
         email = request.form.get("email", "").strip().lower()
         dob = request.form.get("dob", "").strip()
         birth_place = request.form.get("birth_place", "").strip()
-        religion = request.form.get("religion", "").strip()
         category = request.form.get("category", "").strip()
-        caste = request.form.get("caste", "").strip()
 
         # ---------- BASIC VALIDATION ----------
-        if not name or not roll_no or not college or not phone or not email or not dob or not birth_place or not religion or not category:
+        if not name or not roll_no or not college or not phone or not email or not dob or not birth_place or not category:
             flash("All required fields must be filled.", "error")
             return render_template("add_student.html")
 
@@ -96,10 +94,10 @@ def add_student():
 
             # ---------- CREATE USER RECORD ----------
             cur.execute("""
-                INSERT INTO users_master (name, email, password, phone, role_id, address, dob, religion, category, caste, birth_place)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO users_master (name, email, password, phone, role_id, address, dob, category, birth_place)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id;
-            """, (name, email, generate_password_hash(email + roll_no, method="pbkdf2:sha256", salt_length=16), phone, student_role_id, college, dob, religion, category, caste, birth_place))
+            """, (name, email, generate_password_hash(email + roll_no, method="pbkdf2:sha256", salt_length=16), phone, student_role_id, college, dob, category, birth_place))
 
             user_id = cur.fetchone()[0]
 

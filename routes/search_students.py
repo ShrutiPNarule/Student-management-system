@@ -70,6 +70,11 @@ def search_students():
             cur.execute(query, params)
             results = cur.fetchall()
             
+            # Debug: print results
+            print(f"[DEBUG] Search results: {results}")
+            for i, result in enumerate(results):
+                print(f"[DEBUG] Result {i}: id={result[0]}, name={result[1]}")
+            
             cur.close()
             conn.close()
             
@@ -83,7 +88,7 @@ def search_students():
     return render_template("search_students.html", results=results)
 
 
-@app.route("/student/<int:student_id>/profile", methods=["GET"])
+@app.route("/student/<student_id>/profile", methods=["GET"])
 def student_profile(student_id):
     if "user_email" not in session:
         flash("Please login to continue.", "error")
@@ -94,14 +99,30 @@ def student_profile(student_id):
         return redirect(url_for("index"))
     
     try:
+        print(f"[DEBUG] student_profile called with student_id: {student_id} (type: {type(student_id)})")
+        
+        # student_id is already a string (ST000006 format)
+        if not student_id or student_id.strip() == "":
+            print(f"[ERROR] Empty student_id")
+            flash("Invalid student ID.", "error")
+            return redirect(url_for("search_students"))
+        
         conn = get_connection()
         cur = conn.cursor()
         
+        print(f"[DEBUG] Querying for student with id: {student_id}")
         cur.execute("SELECT * FROM students_data WHERE id = %s", (student_id,))
         student = cur.fetchone()
         
+        print(f"[DEBUG] Query result: {student}")
+        
+        if not student:
+            print(f"[ERROR] Student with id {student_id} not found")
+            flash("Student not found.", "error")
+            return redirect(url_for("search_students"))
+        
         actions = []
-        if student:
+        try:
             cur.execute("""
                 SELECT id, action_type, user_email, timestamp, status
                 FROM activity_logs
@@ -110,6 +131,9 @@ def student_profile(student_id):
                 LIMIT 10
             """, (student_id,))
             actions = cur.fetchall()
+        except:
+            # activity_logs table might not exist, just continue without it
+            actions = []
         
         cur.close()
         conn.close()
@@ -117,6 +141,10 @@ def student_profile(student_id):
         return render_template("student_profile.html", student=student, actions=actions)
     
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[ERROR] Exception in student_profile: {e}")
+        import traceback
+        traceback.print_exc()
+        flash("An error occurred while fetching the student profile.", "error")
+        return redirect(url_for("search_students"))
         flash("An error occurred.", "error")
         return redirect(url_for("index"))

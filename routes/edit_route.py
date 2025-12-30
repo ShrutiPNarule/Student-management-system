@@ -34,12 +34,10 @@ def update_student_data(student_id):
         email = request.form.get("email", "").strip().lower()
         dob = request.form.get("dob", "").strip()
         birth_place = request.form.get("birth_place", "").strip()
-        religion = request.form.get("religion", "").strip()
         category = request.form.get("category", "").strip()
-        caste = request.form.get("caste", "").strip()
 
         # ---------- BASIC VALIDATION ----------
-        if not name or not roll_no or not college or not phone or not email or not dob or not birth_place or not religion or not category:
+        if not name or not roll_no or not college or not phone or not email or not dob or not birth_place or not category:
             flash("All required fields must be filled.", "error")
             return redirect(url_for("update_student_data", student_id=student_id))
 
@@ -63,8 +61,12 @@ def update_student_data(student_id):
             marks2 = int(request.form.get("marks2") or 0)
             marks3 = int(request.form.get("marks3") or 0)
             marks4 = int(request.form.get("marks4") or 0)
+            marks5 = int(request.form.get("marks5") or 0)
+            marks6 = int(request.form.get("marks6") or 0)
+            marks7 = int(request.form.get("marks7") or 0)
+            marks8 = int(request.form.get("marks8") or 0)
 
-            for m in [marks_10th, marks_12th, marks1, marks2, marks3, marks4]:
+            for m in [marks_10th, marks_12th, marks1, marks2, marks3, marks4, marks5, marks6, marks7, marks8]:
                 if m < 0 or m > 100:
                     raise ValueError
 
@@ -129,15 +131,17 @@ def update_student_data(student_id):
                 "email": email,
                 "dob": dob,
                 "birth_place": birth_place,
-                "religion": religion,
                 "category": category,
-                "caste": caste,
                 "marks_10th": marks_10th,
                 "marks_12th": marks_12th,
                 "marks1": marks1,
                 "marks2": marks2,
                 "marks3": marks3,
-                "marks4": marks4
+                "marks4": marks4,
+                "marks5": marks5,
+                "marks6": marks6,
+                "marks7": marks7,
+                "marks8": marks8
             }
 
             print(f"[EDIT REQUEST] Creating approval request for student {student_id}")

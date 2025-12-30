@@ -136,24 +136,16 @@ def approve_request(request_id):
             # Build dynamic UPDATE for users_master based on provided fields
             user_updates = []
             user_params = []
-            # User fields: name, email, phone, address, dob, birth_place, religion, category, caste
-            user_fields = ["name", "email", "phone", "dob", "birth_place", "religion", "category", "caste"]
+            # User fields: name, email, phone, address, dob, birth_place, category
+            user_fields = ["name", "email", "phone", "dob", "birth_place", "category"]
             for field in user_fields:
                 if field in data and data[field] is not None:
                     user_updates.append(f"{field} = %s")
                     user_params.append(data[field])
             
-            # Special case: college is stored as address if address is empty
-            if "college" in data and data["college"] is not None and "address" not in data:
-                user_updates.append("address = %s")
-                user_params.append(data["college"])
-            elif "college" in data and data["college"] is not None:
-                user_updates.append("address = %s")
-                user_params.append(data["college"])
-            
             if user_updates:
                 user_params.append(user_id)
-                update_query = f"UPDATE users_master SET {', '.join(user_updates)} WHERE id = %s"
+                update_query = f"UPDATE users_master SET {', '.join(user_updates)}, updated_at = CURRENT_TIMESTAMP WHERE id = %s"
                 print(f"[APPROVAL] Users update query: {update_query} | Params: {user_params}")
                 cur.execute(update_query, user_params)
             
@@ -168,24 +160,85 @@ def approve_request(request_id):
             
             if student_updates:
                 student_params.append(entity_id)
-                update_query = f"UPDATE students_master SET {', '.join(student_updates)} WHERE id = %s AND is_deleted = FALSE"
+                update_query = f"UPDATE students_master SET {', '.join(student_updates)}, updated_at = CURRENT_TIMESTAMP WHERE id = %s AND is_deleted = FALSE"
                 print(f"[APPROVAL] Student update query: {update_query} | Params: {student_params}")
                 cur.execute(update_query, student_params)
+            
+            # Handle college update (create/update college_enrollment if college is provided)
+            if "college" in data and data["college"] is not None:
+                print(f"[APPROVAL] Processing college update: {data['college']}")
+                # First, try to find college by name
+                cur.execute("""
+                    SELECT id FROM colleges_master WHERE name ILIKE %s LIMIT 1
+                """, (data["college"],))
+                college_result = cur.fetchone()
+                
+                if college_result:
+                    college_id = college_result[0]
+                    # Check if enrollment exists
+                    cur.execute("""
+                        SELECT id FROM college_enrollment 
+                        WHERE student_id = %s
+                    """, (entity_id,))
+                    
+                    if cur.fetchone():
+                        # Update existing enrollment
+                        cur.execute("""
+                            UPDATE college_enrollment 
+                            SET college_id = %s, updated_at = CURRENT_TIMESTAMP
+                            WHERE student_id = %s
+                        """, (college_id, entity_id))
+                    else:
+                        # Create new enrollment
+                        cur.execute("""
+                            INSERT INTO college_enrollment (student_id, college_id, status)
+                            VALUES (%s, %s, 'Active')
+                        """, (entity_id, college_id))
+                    print(f"[APPROVAL] College enrollment updated to: {data['college']}")
+            
             
             # Build dynamic UPDATE for student_marks based on provided fields
             marks_updates = []
             marks_params = []
-            marks_fields = ["marks_10th", "marks_12th", "marks1", "marks2", "marks3", "marks4"]
+            marks_fields = ["marks_10th", "marks_12th", "marks1", "marks2", "marks3", "marks4", "marks5", "marks6", "marks7", "marks8"]
             for field in marks_fields:
                 if field in data and data[field] is not None:
                     marks_updates.append(f"{field} = %s")
                     marks_params.append(data[field])
             
             if marks_updates:
-                marks_params.append(entity_id)
-                update_query = f"UPDATE student_marks SET {', '.join(marks_updates)} WHERE student_id = %s"
-                print(f"[APPROVAL] Marks update query: {update_query} | Params: {marks_params}")
-                cur.execute(update_query, marks_params)
+                # First check if student_marks record exists
+                cur.execute("SELECT id FROM student_marks WHERE student_id = %s", (entity_id,))
+                marks_record = cur.fetchone()
+                
+                if marks_record:
+                    # Update existing record
+                    marks_params.append(entity_id)
+                    update_query = f"UPDATE student_marks SET {', '.join(marks_updates)}, updated_at = CURRENT_TIMESTAMP WHERE student_id = %s"
+                    print(f"[APPROVAL] Marks update query: {update_query} | Params: {marks_params}")
+                    cur.execute(update_query, marks_params)
+                else:
+                    # Insert new record
+                    insert_fields = ["student_id"]
+                    insert_values = [entity_id]
+                    insert_placeholders = ["%s"]
+                    
+                    # Add marks fields to insert
+                    marks_data = {}
+                    for field in marks_fields:
+                        if field in data and data[field] is not None:
+                            marks_data[field] = data[field]
+                        else:
+                            marks_data[field] = 0
+                    
+                    for field in marks_fields:
+                        insert_fields.append(field)
+                        insert_values.append(marks_data[field])
+                        insert_placeholders.append("%s")
+                    
+                    insert_query = f"INSERT INTO student_marks ({', '.join(insert_fields)}) VALUES ({', '.join(insert_placeholders)})"
+                    print(f"[APPROVAL] Marks insert query: {insert_query} | Params: {insert_values}")
+                    cur.execute(insert_query, insert_values)
             
             print(f"[APPROVAL] EDIT approval completed for student {entity_id}")
             action_msg = "APPROVED EDIT"

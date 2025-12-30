@@ -19,72 +19,76 @@
                     <strong>Roll Number:</strong> {{ student[2] }}
                 </div>
                 <div class="info-item">
-                    <strong>Email:</strong> {{ student[4] }}
+                    <strong>Email:</strong> {{ student[5] }}
                 </div>
             </div>
 
             <div class="info-row">
                 <div class="info-item">
-                    <strong>Phone:</strong> {{ student[3] }}
+                    <strong>Phone:</strong> {{ student[4] }}
                 </div>
                 <div class="info-item">
-                    <strong>College:</strong> {{ student[5] }}
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-item">
-                    <strong>Date of Birth:</strong> {{ student[12] }}
-                </div>
-                <div class="info-item">
-                    <strong>Birth Place:</strong> {{ student[13] }}
+                    <strong>College:</strong> {{ student[6] }}
                 </div>
             </div>
 
             <div class="info-row">
                 <div class="info-item">
-                    <strong>Religion:</strong> {{ student[14] }}
+                    <strong>Address:</strong> {{ student[3] }}
                 </div>
                 <div class="info-item">
-                    <strong>Category:</strong> {{ student[15] }}
+                    <strong>Category:</strong> {{ student[7] }}
                 </div>
             </div>
 
             <div class="info-row">
                 <div class="info-item">
-                    <strong>Caste:</strong> {{ student[16] or 'N/A' }}
+                    <strong>Date of Birth:</strong> {{ student[8] }}
                 </div>
                 <div class="info-item">
-                    <strong>GPA:</strong> {{ student[11] }}
+                    <strong>Status:</strong> {{ student[9] }}
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-item">
+                    <strong>GPA:</strong> {{ student[16] }}
+                </div>
+                <div class="info-item">
+                    <strong>Created:</strong> {{ student[17] }}
                 </div>
             </div>
 
             <h3 style="margin-top: 30px;">Academic Details</h3>
             <div class="info-row">
                 <div class="info-item">
-                    <strong>10th Marks:</strong> {{ student[6] }}
+                    <strong>10th Marks:</strong> {{ student[10] }}
                 </div>
                 <div class="info-item">
-                    <strong>12th Marks:</strong> {{ student[7] }}
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-item">
-                    <strong>Year 1 Marks:</strong> {{ student[8] }}
-                </div>
-                <div class="info-item">
-                    <strong>Year 2 Marks:</strong> {{ student[9] }}
+                    <strong>12th Marks:</strong> {{ student[11] }}
                 </div>
             </div>
 
             <div class="info-row">
                 <div class="info-item">
-                    <strong>Year 3 Marks:</strong> {{ student[10] }}
+                    <strong>Semester 1 Marks:</strong> {{ student[12] }}
+                </div>
+                <div class="info-item">
+                    <strong>Semester 2 Marks:</strong> {{ student[13] }}
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-item">
+                    <strong>Semester 3 Marks:</strong> {{ student[14] }}
+                </div>
+                <div class="info-item">
+                    <strong>Semester 4 Marks:</strong> {{ student[15] }}
                 </div>
             </div>
 
             <h3 style="margin-top: 30px;">Action History</h3>
+            {% if actions %}
             <table border="1" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #f5f5f5;">
@@ -105,6 +109,9 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <p style="color: #666;">No action history available.</p>
+            {% endif %}
 
             <div class="form-actions" style="margin-top: 30px;">
                 {% if session.get("role") == "admin" %}

@@ -64,40 +64,14 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label>Religion</label>
-                <select name="religion" required>
-                    <option value="">-- Select Religion --</option>
-                    <option value="Hindu" {% if student[14] == 'Hindu' %}selected{% endif %}>Hindu</option>
-                    <option value="Muslim" {% if student[14] == 'Muslim' %}selected{% endif %}>Muslim</option>
-                    <option value="Christian" {% if student[14] == 'Christian' %}selected{% endif %}>Christian</option>
-                    <option value="Sikh" {% if student[14] == 'Sikh' %}selected{% endif %}>Sikh</option>
-                    <option value="Buddhist" {% if student[14] == 'Buddhist' %}selected{% endif %}>Buddhist</option>
-                    <option value="Jain" {% if student[14] == 'Jain' %}selected{% endif %}>Jain</option>
-                    <option value="Other" {% if student[14] == 'Other' %}selected{% endif %}>Other</option>
-                </select>
-            </div>
-
-            <div class="form-group">
                 <label>Category</label>
                 <select name="category" required>
                     <option value="">-- Select Category --</option>
-                    <option value="General" {% if student[15] == 'General' %}selected{% endif %}>General</option>
-                    <option value="OBC" {% if student[15] == 'OBC' %}selected{% endif %}>OBC</option>
-                    <option value="SC" {% if student[15] == 'SC' %}selected{% endif %}>SC</option>
-                    <option value="ST" {% if student[15] == 'ST' %}selected{% endif %}>ST</option>
+                    <option value="General" {% if student[14] == 'General' %}selected{% endif %}>General</option>
+                    <option value="OBC" {% if student[14] == 'OBC' %}selected{% endif %}>OBC</option>
+                    <option value="SC" {% if student[14] == 'SC' %}selected{% endif %}>SC</option>
+                    <option value="ST" {% if student[14] == 'ST' %}selected{% endif %}>ST</option>
                 </select>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label>Caste</label>
-                <input
-                    type="text"
-                    name="caste"
-                    value="{{ student[16] }}"
-                    maxlength="50"
-                >
             </div>
         </div>
 
@@ -167,22 +141,22 @@
         <h3>College Marks</h3>
         <div class="form-row">
             <div class="form-group">
-                <label>Marks Year 1</label>
+                <label>Marks Semester 1</label>
                 <input
                     type="number"
                     name="marks1"
-                    value="{{ student[8] }}"
+                    value="{{ student[10] }}"
                     min="0"
                     max="100"
                 >
             </div>
 
             <div class="form-group">
-                <label>Marks Year 2</label>
+                <label>Marks Semester 2</label>
                 <input
                     type="number"
                     name="marks2"
-                    value="{{ student[9] }}"
+                    value="{{ student[11] }}"
                     min="0"
                     max="100"
                 >
@@ -191,22 +165,70 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label>Marks Year 3</label>
+                <label>Marks Semester 3</label>
                 <input
                     type="number"
                     name="marks3"
-                    value="{{ student[10] }}"
+                    value="{{ student[12] }}"
                     min="0"
                     max="100"
                 >
             </div>
 
             <div class="form-group">
-                <label>Marks Year 4</label>
+                <label>Marks Semester 4</label>
                 <input
                     type="number"
                     name="marks4"
-                    value="{{ student[11] }}"
+                    value="{{ student[13] }}"
+                    min="0"
+                    max="100"
+                >
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Marks Semester 5</label>
+                <input
+                    type="number"
+                    name="marks5"
+                    value="{{ student[14] }}"
+                    min="0"
+                    max="100"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Marks Semester 6</label>
+                <input
+                    type="number"
+                    name="marks6"
+                    value="{{ student[15] }}"
+                    min="0"
+                    max="100"
+                >
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Marks Semester 7</label>
+                <input
+                    type="number"
+                    name="marks7"
+                    value="{{ student[16] }}"
+                    min="0"
+                    max="100"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Marks Semester 8</label>
+                <input
+                    type="number"
+                    name="marks8"
+                    value="{{ student[17] }}"
                     min="0"
                     max="100"
                 >

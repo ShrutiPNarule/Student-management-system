@@ -23,6 +23,7 @@
             <th>College</th>
             <th>Phone</th>
             <th>Email</th>
+            <th>Actions</th>
         </tr>
     </thead>
 
@@ -35,6 +36,9 @@
             <td>{{ s[3] }}</td>
             <td>{{ s[4] }}</td>
             <td>{{ s[5] }}</td>
+            <td>
+                <a href="{{ url_for('restore_student', student_id=s[0]) }}" class="btn btn-sm btn-success">↩️ Restore</a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

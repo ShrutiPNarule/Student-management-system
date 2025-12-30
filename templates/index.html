@@ -44,14 +44,19 @@
             <th class="col-always">Name</th>
             <th class="col-personal">Roll No</th>
             <th class="col-personal">College</th>
+            <th class="col-personal">Category</th>
             <th class="col-personal">Phone</th>
             <th class="col-personal">Email</th>
             <th class="col-school">10th</th>
             <th class="col-school">12th</th>
-            <th class="col-college">Y1</th>
-            <th class="col-college">Y2</th>
-            <th class="col-college">Y3</th>
-            <th class="col-college">Y4</th>
+            <th class="col-college">S1</th>
+            <th class="col-college">S2</th>
+            <th class="col-college">S3</th>
+            <th class="col-college">S4</th>
+            <th class="col-college">S5</th>
+            <th class="col-college">S6</th>
+            <th class="col-college">S7</th>
+            <th class="col-college">S8</th>
 
             {% if session.get("role") == "admin" %}
                 <th class="col-always">Actions</th>
@@ -65,15 +70,20 @@
             <td class="col-always">{{ s[0] }}</td>
             <td class="col-always">{{ s[1] }}</td>
             <td class="col-personal">{{ s[2] }}</td>
-            <td class="col-personal">{{ s[3] }}</td>
+            <td class="col-personal">{{ s[6] }}</td>
+            <td class="col-personal">{{ s[7] }}</td>
             <td class="col-personal">{{ s[4] }}</td>
             <td class="col-personal">{{ s[5] }}</td>
-            <td class="col-school">{{ s[6] }}</td>
-            <td class="col-school">{{ s[7] }}</td>
-            <td class="col-college">{{ s[8] }}</td>
-            <td class="col-college">{{ s[9] }}</td>
+            <td class="col-school">{{ s[8] }}</td>
+            <td class="col-school">{{ s[9] }}</td>
             <td class="col-college">{{ s[10] }}</td>
             <td class="col-college">{{ s[11] }}</td>
+            <td class="col-college">{{ s[12] }}</td>
+            <td class="col-college">{{ s[13] }}</td>
+            <td class="col-college">{{ s[14] }}</td>
+            <td class="col-college">{{ s[15] }}</td>
+            <td class="col-college">{{ s[16] }}</td>
+            <td class="col-college">{{ s[17] }}</td>
 
             {% if session.get("role") == "admin" %}
             <td class="col-always actions-cell">
@@ -81,6 +91,30 @@
                 <a href="{{ url_for('update_student_data', student_id=s[0]) }}"
                    class="btn btn-secondary btn-sm">
                     Edit
+                </a>
+
+                <!-- Update Marks -->
+                <a href="{{ url_for('update_marks', student_id=s[0]) }}"
+                   class="btn btn-info btn-sm">
+                    📊 Marks
+                </a>
+
+                <!-- Attendance -->
+                <a href="{{ url_for('attendance', student_id=s[0]) }}"
+                   class="btn btn-success btn-sm">
+                    📋 Attendance
+                </a>
+
+                <!-- Scholarship -->
+                <a href="{{ url_for('scholarship', student_id=s[0]) }}"
+                   class="btn btn-warning btn-sm">
+                    🎓 Scholarship
+                </a>
+
+                <!-- Documents -->
+                <a href="{{ url_for('documents', student_id=s[0]) }}"
+                   class="btn btn-info btn-sm">
+                    📄 Documents
                 </a>
 
                 <!-- Soft Delete -->
@@ -229,6 +263,11 @@ function filterColumns(filterType) {
     background-color: #f4f6ff;
     cursor: pointer;
     transition: 0.2s;
+    position: relative;
+    z-index: 100;
+    pointer-events: auto;
+    -webkit-appearance: auto;
+    appearance: auto;
 }
 
 .filter-group select:hover {
