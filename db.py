@@ -96,6 +96,10 @@ try:
     cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS category VARCHAR(50);")
     cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS caste VARCHAR(50);")
     cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS birth_place VARCHAR(100);")
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;")
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS deleted_by TEXT REFERENCES users_master(id) ON DELETE SET NULL;")
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;")
+    cur.execute("ALTER TABLE users_master ADD COLUMN IF NOT EXISTS deletion_reason TEXT;")
 except:
     pass
 
@@ -327,6 +331,24 @@ CREATE TABLE IF NOT EXISTS student_documents (
 """)
 
 # =========================
+# NOTIFICATION PREFERENCES TABLE
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT UNIQUE REFERENCES users_master(id) ON DELETE CASCADE,
+    email_approvals BOOLEAN DEFAULT TRUE,
+    email_approvals_completed BOOLEAN DEFAULT TRUE,
+    email_daily_summary BOOLEAN DEFAULT FALSE,
+    sms_approvals BOOLEAN DEFAULT FALSE,
+    sms_phone TEXT,
+    notification_frequency TEXT DEFAULT 'instant' CHECK (notification_frequency IN ('instant', 'hourly', 'daily')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# =========================
 # STUDENTS DATA VIEW
 # =========================
 # This view provides a unified interface for accessing student information
@@ -374,6 +396,76 @@ LEFT JOIN college_enrollment ce ON sm.id = ce.student_id
 LEFT JOIN colleges_master cc ON ce.college_id = cc.id
 LEFT JOIN student_marks sm1 ON sm.id = sm1.student_id
 WHERE sm.is_deleted = FALSE;
+""")
+
+# =========================
+# IP WHITELIST TABLE
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS ip_whitelist (
+    id TEXT PRIMARY KEY DEFAULT
+        'IP' || LPAD(nextval('activity_seq')::TEXT, 6, '0'),
+    ip_address VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT,
+    added_by TEXT REFERENCES users_master(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# =========================
+# ACTIVE SESSIONS TABLE
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS active_sessions (
+    id TEXT PRIMARY KEY DEFAULT
+        'SS' || LPAD(nextval('activity_seq')::TEXT, 6, '0'),
+    user_id TEXT NOT NULL REFERENCES users_master(id) ON DELETE CASCADE,
+    session_id VARCHAR(255) UNIQUE NOT NULL,
+    ip_address VARCHAR(50),
+    user_agent TEXT,
+    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+""")
+
+# =========================
+# SECURITY CONFIGURATION TABLE
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS security_config (
+    id TEXT PRIMARY KEY DEFAULT
+        'SC' || LPAD(nextval('activity_seq')::TEXT, 6, '0'),
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT,
+    description TEXT,
+    setting_type VARCHAR(20) DEFAULT 'string',
+    updated_by TEXT REFERENCES users_master(id) ON DELETE SET NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# Insert default security settings
+cur.execute("""
+INSERT INTO security_config (setting_key, setting_value, description, setting_type)
+VALUES 
+    ('password_min_length', '8', 'Minimum password length', 'integer'),
+    ('password_require_uppercase', 'true', 'Require uppercase letters in password', 'boolean'),
+    ('password_require_numbers', 'true', 'Require numbers in password', 'boolean'),
+    ('password_require_special', 'true', 'Require special characters in password', 'boolean'),
+    ('password_expiration_days', '90', 'Password expiration in days (0 = never)', 'integer'),
+    ('failed_login_attempts', '5', 'Max failed login attempts before lockout', 'integer'),
+    ('lockout_duration_minutes', '15', 'Account lockout duration in minutes', 'integer'),
+    ('session_timeout_minutes', '30', 'Session timeout in minutes of inactivity', 'integer'),
+    ('enable_2fa', 'true', 'Enable two-factor authentication', 'boolean'),
+    ('enable_ip_whitelist', 'false', 'Enforce IP whitelist', 'boolean'),
+    ('audit_log_retention_days', '180', 'Audit log retention in days', 'integer'),
+    ('enable_email_verification', 'true', 'Require email verification for new accounts', 'boolean'),
+    ('suspicious_login_alert', 'true', 'Alert on suspicious login attempts', 'boolean'),
+    ('api_rate_limit', '100', 'API calls per minute per user', 'integer')
+ON CONFLICT (setting_key) DO NOTHING;
 """)
 
 # =========================

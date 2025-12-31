@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card" style="max-width: 1000px; margin: 0 auto;">
+    <h2>Active Session Management</h2>
+    <p style="color: #666; margin-bottom: 20px;">Monitor and manage user sessions across the system</p>
+
+    <div style="background: #f0f4f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+        <strong>📌 Note:</strong> Terminate user sessions to force logout from inactive or suspicious accounts.
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" novalidate style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ddd;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div class="form-group">
+                <label>Search User</label>
+                <input type="text" name="search" placeholder="Email or Name" value="{{ request.args.get('search', '') }}"
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                    <option value="">-- All Sessions --</option>
+                    <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if request.args.get('status') == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">🔍 Filter Sessions</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Active Sessions Table -->
+    <h3>Active User Sessions</h3>
+    {% if sessions %}
+    <div style="overflow-x: auto;">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="background-color: #3F4F5F; color: white;">
+                    <th style="padding: 12px;">User Email</th>
+                    <th style="padding: 12px;">IP Address</th>
+                    <th style="padding: 12px;">Status</th>
+                    <th style="padding: 12px;">Login Time</th>
+                    <th style="padding: 12px;">Last Activity</th>
+                    <th style="padding: 12px;">Duration</th>
+                    <th style="padding: 12px;">Device</th>
+                    <th style="padding: 12px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sess in sessions %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px;">{{ sess[1] }}</td>
+                    <td style="padding: 12px;">{{ sess[3] or 'N/A' }}</td>
+                    <td style="padding: 12px;">
+                        {% if sess[7] %}
+                            <span style="background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 3px; font-size: 12px;">Active</span>
+                        {% else %}
+                            <span style="background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 3px; font-size: 12px;">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">{{ sess[5] }}</td>
+                    <td style="padding: 12px;">{{ sess[6] }}</td>
+                    <td style="padding: 12px;">{{ sess[8] }}</td>
+                    <td style="padding: 12px; font-size: 11px; color: #666;">{{ sess[4][:50] }}...</td>
+                    <td style="padding: 12px;">
+                        {% if sess[7] %}
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="action" value="terminate">
+                            <input type="hidden" name="session_id" value="{{ sess[0] }}">
+                            <button type="submit" class="btn btn-sm" 
+                                    style="padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; background: #f44336; color: white;"
+                                    onclick="return confirm('Terminate this session? User will be logged out.');">
+                                Terminate
+                            </button>
+                        </form>
+                        {% else %}
+                        <span style="color: #999; font-size: 12px;">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #666; margin-top: 20px;">No active sessions found.</p>
+    {% endif %}
+
+    <!-- Session Statistics -->
+    <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 4px solid #4CAF50;">
+            <strong style="color: #4CAF50;">Total Active Sessions</strong>
+            <p style="font-size: 28px; margin: 10px 0; color: #333;">{{ total_active }}</p>
+        </div>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 4px solid #f44336;">
+            <strong style="color: #f44336;">Total Terminated Sessions</strong>
+            <p style="font-size: 28px; margin: 10px 0; color: #333;">{{ total_terminated }}</p>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<p>Only superadmin can manage sessions.</p>
+<a href="{{ url_for('index') }}" class="btn btn-secondary" style="padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Go Back</a>
+{% endif %}
+
+{% endblock %}

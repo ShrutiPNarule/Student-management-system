@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card" style="max-width: 700px; margin: 0 auto;">
+    <h2>Edit Role Permissions: {{ role_name }}</h2>
+
+    <form method="POST" novalidate>
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="view_student" value="true" {% if permissions['view_student'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">View Students</span>
+                    <small style="color: #666; font-weight: normal;">(Browse student records)</small>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="add_student" value="true" {% if permissions['add_student'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">Add Students</span>
+                    <small style="color: #666; font-weight: normal;">(Create new student records)</small>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="delete_student" value="true" {% if permissions['delete_student'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">Delete Students</span>
+                    <small style="color: #666; font-weight: normal;">(Remove student records)</small>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="change_user_role" value="true" {% if permissions['change_user_role'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">Change User Roles</span>
+                    <small style="color: #666; font-weight: normal;">(Modify user role assignments)</small>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="add_marks" value="true" {% if permissions['add_marks'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">Add/Edit Marks</span>
+                    <small style="color: #666; font-weight: normal;">(Upload and manage student marks)</small>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="view_activity_log" value="true" {% if permissions['view_activity_log'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">View Activity Logs</span>
+                    <small style="color: #666; font-weight: normal;">(Monitor system activities)</small>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="create_application" value="true" {% if permissions['create_application'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">Create Applications</span>
+                    <small style="color: #666; font-weight: normal;">(Submit approval requests)</small>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="approve_application" value="true" {% if permissions['approve_application'] %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 500;">Approve Applications</span>
+                    <small style="color: #666; font-weight: normal;">(Review and approve requests)</small>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+            <a href="{{ url_for('permission_assignment') }}" class="btn btn-secondary" style="padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<a href="{{ url_for('index') }}" class="btn btn-secondary" style="padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Go Back</a>
+{% endif %}
+
+{% endblock %}

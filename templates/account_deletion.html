@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+
+{% block title %}Account Deletion{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h2 class="mb-4">🗑️ Account Deletion</h2>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Warning Alert -->
+            <div class="alert alert-warning" style="border-left: 4px solid #ff6b6b;">
+                <strong>⚠️ Warning:</strong> Account deletion is permanent. All associated data will be marked as deleted.
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="filter-card">
+                <div class="filter-header">Search & Filter</div>
+                <form method="GET" class="filter-form">
+                    <div class="filter-row">
+                        <input type="text" name="search" class="filter-input" placeholder="Search by name or email" 
+                               value="{{ request.args.get('search', '') }}">
+                        <select name="role_filter" class="filter-select">
+                            <option value="">All Roles</option>
+                            <option value="student" {% if request.args.get('role_filter') == 'student' %}selected{% endif %}>Student</option>
+                            <option value="admin" {% if request.args.get('role_filter') == 'admin' %}selected{% endif %}>Admin</option>
+                            <option value="auditor" {% if request.args.get('role_filter') == 'auditor' %}selected{% endif %}>Auditor</option>
+                            <option value="superadmin" {% if request.args.get('role_filter') == 'superadmin' %}selected{% endif %}>Superadmin</option>
+                        </select>
+                        <button type="submit" class="filter-btn">Search</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Users Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <span>Active Users ({{ users|length }})</span>
+                </div>
+                {% if users %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Role</th>
+                                    <th>Created</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td><code>{{ user[0] }}</code></td>
+                                    <td>{{ user[1] }}</td>
+                                    <td>{{ user[2] }}</td>
+                                    <td>{{ user[3] or '-' }}</td>
+                                    <td><span class="role-badge">{{ user[4] or 'None' }}</span></td>
+                                    <td>{{ user[5] }}</td>
+                                    <td>
+                                        <button class="action-btn delete-btn" 
+                                                onclick="openDeleteModal('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}')">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">No users found</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Account Deletion</h3>
+            <span class="modal-close" onclick="closeDeleteModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p class="user-info">
+                <strong>Account:</strong> <span id="userDisplay"></span>
+            </p>
+            <form method="POST" id="deleteForm">
+                <input type="hidden" name="user_id" id="userId">
+                <div class="form-group">
+                    <label for="reason">Reason for Deletion <span class="required">*</span></label>
+                    <textarea id="reason" name="reason" class="form-textarea" placeholder="Enter reason for account deletion..." required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .filter-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .filter-header {
+        background-color: #3F4F5F;
+        color: white;
+        padding: 12px 18px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .filter-form {
+        padding: 18px;
+        background-color: #fafafa;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .filter-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .filter-select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        min-width: 120px;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        background-color: #3F4F5F;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .filter-btn:hover {
+        background-color: #2d3a47;
+    }
+
+    .table-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .table-header {
+        background-color: #3F4F5F;
+        color: white;
+        padding: 12px 18px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .data-table thead {
+        background-color: #f5f5f5;
+    }
+
+    .data-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    code {
+        background-color: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+    }
+
+    .role-badge {
+        background-color: #e8f0ff;
+        color: #003d99;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .delete-btn {
+        background-color: #ff6b6b;
+        color: white;
+    }
+
+    .delete-btn:hover {
+        background-color: #ff5252;
+    }
+
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: #999;
+        font-size: 14px;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 0;
+        border-radius: 6px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .modal-header {
+        background-color: #3F4F5F;
+        color: white;
+        padding: 16px;
+        border-radius: 6px 6px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    .modal-close {
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+    }
+
+    .modal-close:hover {
+        color: #ff6b6b;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .user-info {
+        background-color: #f5f5f5;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 18px;
+        font-size: 13px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+        font-size: 13px;
+    }
+
+    .required {
+        color: #ff6b6b;
+    }
+
+    .form-textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: Arial, sans-serif;
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: #3F4F5F;
+        box-shadow: 0 0 0 2px rgba(63, 79, 95, 0.15);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary {
+        background-color: #ddd;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background-color: #ccc;
+    }
+
+    .btn-danger {
+        background-color: #ff6b6b;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #ff5252;
+    }
+
+    @media (max-width: 768px) {
+        .filter-row {
+            flex-direction: column;
+        }
+
+        .filter-input,
+        .filter-select,
+        .filter-btn {
+            width: 100%;
+        }
+
+        .modal-content {
+            margin: 30% auto;
+        }
+    }
+</style>
+
+<script>
+    function openDeleteModal(userId, userName, userEmail) {
+        document.getElementById('userId').value = userId;
+        document.getElementById('userDisplay').textContent = userName + ' (' + userEmail + ')';
+        document.getElementById('reason').value = '';
+        document.getElementById('deleteModal').style.display = 'block';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('deleteModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

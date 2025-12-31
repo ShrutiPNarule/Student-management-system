@@ -151,7 +151,7 @@ def attendance(student_id):
                        present_days, absent_days, leave_days,
                        CASE 
                            WHEN (present_days + absent_days) > 0 
-                           THEN ROUND(present_days * 100.0 / (present_days + absent_days), 2)
+                           THEN ROUND((present_days * 100.0 / (present_days + absent_days))::numeric, 2)
                            ELSE 0
                        END AS percentage,
                        remarks

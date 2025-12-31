@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if session.get("role") == "superadmin" %}
+
+<div class="form-card" style="max-width: 1000px; margin: 0 auto;">
+    <h2>Permission Assignment</h2>
+    <p style="color: #666; margin-bottom: 20px;">Manage role-based permissions and access controls</p>
+
+    {% if roles %}
+    <div style="overflow-x: auto;">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="background-color: #3F4F5F; color: white; position: sticky; top: 0;">
+                    <th style="padding: 12px;">Role</th>
+                    <th style="padding: 12px;">View Students</th>
+                    <th style="padding: 12px;">Add Students</th>
+                    <th style="padding: 12px;">Delete Students</th>
+                    <th style="padding: 12px;">Change Roles</th>
+                    <th style="padding: 12px;">Add Marks</th>
+                    <th style="padding: 12px;">View Activity Logs</th>
+                    <th style="padding: 12px;">Create Application</th>
+                    <th style="padding: 12px;">Approve Application</th>
+                    <th style="padding: 12px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for role in roles %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px; font-weight: bold;">{{ role[1] }}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[2] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[2] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[3] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[3] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[4] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[4] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[5] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[5] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[6] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[6] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[7] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[7] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[8] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[8] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="color: {% if role[9] %}#4CAF50{% else %}#f44336{% endif %};">
+                            {% if role[9] %}✓{% else %}✗{% endif %}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <a href="{{ url_for('edit_role_permissions', role_id=role[0]) }}" class="btn btn-sm btn-primary">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #666; margin-top: 20px;">No roles found in the system.</p>
+    {% endif %}
+</div>
+
+<style>
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+</style>
+
+{% else %}
+<h3 style="color:red;">Unauthorized Access</h3>
+<p>Only superadmin can manage permissions.</p>
+<a href="{{ url_for('index') }}" class="btn btn-secondary" style="padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px;">Go Back</a>
+{% endif %}
+
+{% endblock %}

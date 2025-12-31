@@ -1,0 +1,18 @@
+{
+  "tagname-lowercase": false,
+  "attr-lowercase": false,
+  "attr-value-double-quotes": false,
+  "attr-value-not-empty": false,
+  "attr-no-duplicate": true,
+  "space-tab-mixed-disabled": false,
+  "id-unique": false,
+  "src-not-empty": true,
+  "title-require": false,
+  "alt-require": false,
+  "doctype-first": false,
+  "head-script-disabled": false,
+  "style-disabled": false,
+  "const-tab-width": false,
+  "spec-char-escape": false,
+  "jinja2": true
+}

@@ -15,7 +15,7 @@ import psycopg2
 from routes.log_utils import log_action
 
 
-@app.route("/change-role/<int:user_id>", methods=["GET", "POST"])
+@app.route("/change-role/<user_id>", methods=["GET", "POST"])
 def change_user_role(user_id):
     # ---------- AUTH CHECK ----------
     if "user_email" not in session:

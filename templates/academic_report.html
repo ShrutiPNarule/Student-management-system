@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 
+<!-- REPORT NAVIGATION TABS -->
+<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="{{ url_for('reports') }}" class="btn btn-secondary" style="background: #5A6B7D; color: white;">📊 Student Reports</a>
+    <a href="{{ url_for('academic_report') }}" class="btn btn-primary" style="background: #3F4F5F; color: white;">📚 Academic Analysis</a>
+    <a href="{{ url_for('college_report') }}" class="btn btn-secondary" style="background: #5A6B7D; color: white;">🏫 College-wise Report</a>
+    <a href="{{ url_for('attendance_report') }}" class="btn btn-secondary" style="background: #5A6B7D; color: white;">📋 Attendance Report</a>
+    <a href="{{ url_for('category_stats') }}" class="btn btn-secondary" style="background: #5A6B7D; color: white;">📈 Category Stats</a>
+</div>
+
 {% if session.get("role") in ["auditor", "superadmin"] %}
 
 <div class="form-card">

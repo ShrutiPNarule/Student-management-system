@@ -1,108 +1,625 @@
 {% extends "base.html" %}
+
+{% block title %}System Health & Performance{% endblock %}
+
 {% block content %}
+<div class="container mt-5">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2>💪 System Health & Performance Monitoring</h2>
+        <p class="text-muted">Real-time system metrics and performance indicators</p>
+    </div>
 
-{% if session.get("role") == "superadmin" %}
-
-<div class="form-card">
-    <h2>System Health & Performance</h2>
-
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0;">
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #1976d2;">
-            <h4>Database Status</h4>
-            <p style="font-size: 20px; color: #1976d2;">
-                <span id="db_status">🔄 Checking...</span>
-            </p>
+    <!-- System Status Overview -->
+    <div class="row mb-4">
+        <!-- Database Connection Status -->
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="health-card">
+                <div class="health-header">
+                    <h5>📊 Database</h5>
+                    <span class="badge {% if metrics.db_status == 'Connected' %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ metrics.db_status }}
+                    </span>
+                </div>
+                <div class="health-content">
+                    <p class="metric-label">Status</p>
+                    <p class="metric-value">
+                        {% if metrics.db_status == 'Connected' %}
+                            <span class="text-success">✓ Active</span>
+                        {% else %}
+                            <span class="text-danger">✗ Offline</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #7b1fa2;">
-            <h4>Active Users</h4>
-            <p style="font-size: 20px; color: #7b1fa2;">{{ active_users or 0 }}</p>
+        <!-- Server Time -->
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="health-card">
+                <div class="health-header">
+                    <h5>⏰ Server Time</h5>
+                    <span class="badge bg-info">Live</span>
+                </div>
+                <div class="health-content">
+                    <p class="metric-label">Current Time (UTC)</p>
+                    <p class="metric-value">{{ metrics.server_time }}</p>
+                </div>
+            </div>
         </div>
 
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #388e3c;">
-            <h4>API Response Time</h4>
-            <p style="font-size: 20px; color: #388e3c;"><span id="response_time">--</span> ms</p>
-        </div>
-
-        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #f57c00;">
-            <h4>Total Students</h4>
-            <p style="font-size: 20px; color: #f57c00;">{{ total_students or 0 }}</p>
-        </div>
-
-        <div style="background: #fce4ec; padding: 15px; border-radius: 8px; border-left: 4px solid #c2185b;">
-            <h4>Pending Approvals</h4>
-            <p style="font-size: 20px; color: #c2185b;">{{ pending_approvals or 0 }}</p>
-        </div>
-
-        <div style="background: #eceff1; padding: 15px; border-radius: 8px; border-left: 4px solid #37474f;">
-            <h4>Error Rate</h4>
-            <p style="font-size: 20px; color: #37474f;"><span id="error_rate">--</span>%</p>
+        <!-- System Version -->
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="health-card">
+                <div class="health-header">
+                    <h5>🔧 Database Engine</h5>
+                    <span class="badge bg-primary">{{ metrics.db_version }}</span>
+                </div>
+                <div class="health-content">
+                    <p class="metric-label">Database Type</p>
+                    <p class="metric-value">{{ metrics.db_version }}</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <h3 style="margin-top: 30px;">System Alerts</h3>
-    {% if alerts %}
-    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 15px;">
-        <ul>
-            {% for alert in alerts %}
-            <li>{{ alert }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% else %}
-    <div style="background: #d4edda; border: 1px solid #28a745; border-radius: 4px; padding: 15px;">
-        <p>✅ All systems operational</p>
-    </div>
-    {% endif %}
+    <!-- User & Session Metrics -->
+    <div class="row mb-4">
+        <!-- Active Users -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card primary">
+                <div class="metric-icon">👥</div>
+                <div class="metric-info">
+                    <p class="metric-label">Active Users</p>
+                    <p class="metric-value">{{ metrics.active_users }}</p>
+                    <p class="metric-subtext">Non-deleted accounts</p>
+                </div>
+            </div>
+        </div>
 
-    <h3 style="margin-top: 30px;">Recent Errors</h3>
-    {% if recent_errors %}
-    <table border="1" style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #f5f5f5;">
-                <th>Timestamp</th>
-                <th>Error Type</th>
-                <th>Message</th>
-                <th>User</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for error in recent_errors %}
-            <tr>
-                <td>{{ error[0] }}</td>
-                <td>{{ error[1] }}</td>
-                <td>{{ error[2] }}</td>
-                <td>{{ error[3] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
+        <!-- Active Students -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card info">
+                <div class="metric-icon">🎓</div>
+                <div class="metric-info">
+                    <p class="metric-label">Active Students</p>
+                    <p class="metric-value">{{ metrics.active_students }}</p>
+                    <p class="metric-subtext">Enrolled students</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card success">
+                <div class="metric-icon">🔓</div>
+                <div class="metric-info">
+                    <p class="metric-label">Active Sessions</p>
+                    <p class="metric-value">{{ metrics.active_sessions }}</p>
+                    <p class="metric-subtext">Current logins</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Roles -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card warning">
+                <div class="metric-icon">🎭</div>
+                <div class="metric-info">
+                    <p class="metric-label">Total Roles</p>
+                    <p class="metric-value">{{ metrics.total_roles }}</p>
+                    <p class="metric-subtext">System roles</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data & Attendance Metrics -->
+    <div class="row mb-4">
+        <!-- Total Activity Logs -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card secondary">
+                <div class="metric-icon">📋</div>
+                <div class="metric-info">
+                    <p class="metric-label">Activity Logs</p>
+                    <p class="metric-value">{{ metrics.total_logs }}</p>
+                    <p class="metric-subtext">System events</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Records -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card info">
+                <div class="metric-icon">📅</div>
+                <div class="metric-info">
+                    <p class="metric-label">Attendance Records</p>
+                    <p class="metric-value">{{ metrics.attendance_records }}</p>
+                    <p class="metric-subtext">Total entries</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Errors (24h) -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card {% if metrics.recent_errors > 0 %}danger{% else %}success{% endif %}">
+                <div class="metric-icon">⚠️</div>
+                <div class="metric-info">
+                    <p class="metric-label">Recent Errors (24h)</p>
+                    <p class="metric-value">{{ metrics.recent_errors }}</p>
+                    <p class="metric-subtext">Error events</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Locked Accounts -->
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card {% if metrics.locked_accounts > 0 %}warning{% else %}success{% endif %}">
+                <div class="metric-icon">🔒</div>
+                <div class="metric-info">
+                    <p class="metric-label">Locked Accounts</p>
+                    <p class="metric-value">{{ metrics.locked_accounts }}</p>
+                    <p class="metric-subtext">Active locks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deleted Items Metrics -->
+    <div class="row mb-4">
+        <!-- Deleted Users -->
+        <div class="col-md-6 col-sm-6 mb-3">
+            <div class="metric-card light">
+                <div class="metric-icon">🗑️</div>
+                <div class="metric-info">
+                    <p class="metric-label">Deleted User Accounts</p>
+                    <p class="metric-value">{{ metrics.deleted_users }}</p>
+                    <p class="metric-subtext">
+                        <a href="{{ url_for('recycle_bin') }}" class="link-primary">View in Recycle Bin →</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deleted Students -->
+        <div class="col-md-6 col-sm-6 mb-3">
+            <div class="metric-card light">
+                <div class="metric-icon">🗑️</div>
+                <div class="metric-info">
+                    <p class="metric-label">Deleted Student Records</p>
+                    <p class="metric-value">{{ metrics.deleted_students }}</p>
+                    <p class="metric-subtext">
+                        <a href="{{ url_for('recycle_bin') }}" class="link-primary">View in Recycle Bin →</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Configuration Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="security-section">
+                <h4>🔐 Security Configuration Status</h4>
+                <div class="security-grid">
+                    <div class="security-item">
+                        <p class="security-label">2FA Enabled</p>
+                        <p class="security-value">
+                            {% if metrics.security.get('enable_2fa') == 'true' %}
+                                <span class="badge bg-success">✓ Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">✗ No</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="security-item">
+                        <p class="security-label">IP Whitelist</p>
+                        <p class="security-value">
+                            {% if metrics.security.get('enable_ip_whitelist') == 'true' %}
+                                <span class="badge bg-success">✓ Enabled</span>
+                            {% else %}
+                                <span class="badge bg-secondary">✗ Disabled</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="security-item">
+                        <p class="security-label">Email Verification</p>
+                        <p class="security-value">
+                            {% if metrics.security.get('enable_email_verification') == 'true' %}
+                                <span class="badge bg-success">✓ Enabled</span>
+                            {% else %}
+                                <span class="badge bg-secondary">✗ Disabled</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Activity Trends -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="activity-trends">
+                <h4>📈 Daily Activity (Last 7 Days)</h4>
+                <div class="trends-table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Activity Count</th>
+                                <th>Bar Chart</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log_date, count in metrics.daily_activity %}
+                                <tr>
+                                    <td><strong>{{ log_date }}</strong></td>
+                                    <td><strong>{{ count }}</strong></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-primary" style="width: {% if count > 0 %}{{ (count / metrics.daily_activity[0][1] * 100) | int }}%{% else %}5%{% endif %}">
+                                                {{ count }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No activity data available</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button class="btn btn-primary" onclick="location.reload()">
+                🔄 Refresh Dashboard
+            </button>
+        </div>
+    </div>
+
 </div>
 
-<script>
-// Monitor system health in real-time
-async function checkSystemHealth() {
-    try {
-        const response = await fetch('/api/system-health');
-        const data = await response.json();
-        
-        document.getElementById('db_status').textContent = data.db_status ? '✅ Connected' : '❌ Error';
-        document.getElementById('response_time').textContent = data.response_time;
-        document.getElementById('error_rate').textContent = data.error_rate;
-    } catch (error) {
-        console.error('Error checking health:', error);
+<style>
+    .page-header {
+        border-bottom: 3px solid #3F4F5F;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
     }
-}
 
-// Check every 30 seconds
-setInterval(checkSystemHealth, 30000);
-checkSystemHealth();
-</script>
+    .page-header h2 {
+        color: #3F4F5F;
+        font-weight: 600;
+        margin: 0;
+    }
 
-{% else %}
-<h3 style="color:red;">Unauthorized Access</h3>
-<a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
-{% endif %}
+    .page-header p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+    }
+
+    /* Health Cards */
+    .health-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        height: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .health-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .health-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 10px;
+    }
+
+    .health-header h5 {
+        margin: 0;
+        color: #3F4F5F;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .health-header .badge {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .health-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .metric-label {
+        margin: 0;
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .metric-value {
+        margin: 0;
+        font-size: 18px;
+        color: #3F4F5F;
+        font-weight: 600;
+    }
+
+    /* Metric Cards */
+    .metric-card {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        border-radius: 8px;
+        color: white;
+        height: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .metric-card.primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+
+    .metric-card.info {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    }
+
+    .metric-card.success {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    }
+
+    .metric-card.warning {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    }
+
+    .metric-card.secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+    }
+
+    .metric-card.danger {
+        background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);
+    }
+
+    .metric-card.light {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #333;
+        border: 1px solid #dee2e6;
+    }
+
+    .metric-icon {
+        font-size: 40px;
+        margin-right: 15px;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .metric-info {
+        flex: 1;
+    }
+
+    .metric-info .metric-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .metric-card.light .metric-label {
+        color: #6c757d;
+    }
+
+    .metric-info .metric-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .metric-card.light .metric-value {
+        color: #3F4F5F;
+    }
+
+    .metric-subtext {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 5px 0 0 0;
+    }
+
+    .metric-card.light .metric-subtext {
+        color: #6c757d;
+    }
+
+    .metric-subtext a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .metric-subtext a:hover {
+        text-decoration: underline;
+    }
+
+    .metric-card.light .metric-subtext a {
+        color: #007bff;
+    }
+
+    /* Security Section */
+    .security-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .security-section h4 {
+        color: #3F4F5F;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .security-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .security-item {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        border-left: 4px solid #007bff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .security-label {
+        margin: 0;
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .security-value {
+        margin: 0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .security-value .badge {
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    /* Activity Trends */
+    .activity-trends {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .activity-trends h4 {
+        color: #3F4F5F;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .trends-table {
+        overflow-x: auto;
+    }
+
+    .trends-table table {
+        margin: 0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .trends-table thead {
+        background-color: #3F4F5F;
+    }
+
+    .trends-table thead th {
+        color: white;
+        border: none;
+        font-weight: 600;
+        padding: 12px;
+    }
+
+    .trends-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: background-color 0.2s;
+    }
+
+    .trends-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .trends-table tbody td {
+        padding: 12px;
+        color: #333;
+        vertical-align: middle;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+    }
+
+    .progress-bar {
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 20px;
+    }
+
+    /* Link Styling */
+    .link-primary {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .link-primary:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .metric-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .metric-icon {
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+
+        .security-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .metric-info .metric-value {
+            font-size: 20px;
+        }
+    }
+</style>
 
 {% endblock %}

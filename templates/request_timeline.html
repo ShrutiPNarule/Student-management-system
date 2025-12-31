@@ -50,22 +50,15 @@
         {% for req in requests %}
         <div style="display: flex; margin-bottom: 30px;">
             <div style="width: 100px; text-align: center;">
-                <div style="width: 20px; height: 20px; border-radius: 50%; background: 
-                {% if req[6] == 'pending' %}#ffc107
-                {% elif req[6] == 'approved' %}#28a745
-                {% else %}#dc3545{% endif %}; 
-                margin: 0 auto; margin-bottom: 10px;"></div>
-                <small>{{ req[5][:10] }}</small>
+                <div style="width: 20px; height: 20px; border-radius: 50%; {% if req[6] == 'pending' %}background: #ffc107{% elif req[6] == 'approved' %}background: #28a745{% else %}background: #dc3545{% endif %}; margin: 0 auto; margin-bottom: 10px;"></div>
+                <small>{{ req[5].strftime('%Y-%m-%d') if req[5] else 'N/A' }}</small>
             </div>
             <div style="flex: 1; padding-left: 20px; border-left: 2px solid #ddd;">
                 <h5>{{ req[2] | upper }} Request</h5>
-                <p><strong>Student:</strong> {{ req[3] }}</p>
-                <p><strong>Requested by:</strong> {{ req[4] }}</p>
+                <p><strong>Student:</strong> {{ req[3] or 'N/A' }}</p>
+                <p><strong>Requested by:</strong> {{ req[4] or 'N/A' }}</p>
                 <p><strong>Status:</strong> 
-                    <span style="padding: 3px 8px; border-radius: 3px; 
-                    {% if req[6] == 'pending' %}background: #fff3cd;
-                    {% elif req[6] == 'approved' %}background: #d4edda;
-                    {% else %}background: #f8d7da;{% endif %}">
+                    <span style="padding: 3px 8px; border-radius: 3px; {% if req[6] == 'pending' %}background: #fff3cd;{% elif req[6] == 'approved' %}background: #d4edda;{% else %}background: #f8d7da;{% endif %}">
                         {{ req[6] }}
                     </span>
                 </p>

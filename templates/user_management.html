@@ -60,15 +60,13 @@
                 <td>{{ user[2] }}</td>
                 <td>{{ user[4] }}</td>
                 <td>
-                    <span style="padding: 3px 8px; border-radius: 3px; 
-                    {% if user[5] == 'active' %}background: #d4edda; color: #155724;
-                    {% else %}background: #f8d7da; color: #721c24;{% endif %}">
+                    <span style="padding: 3px 8px; border-radius: 3px; {% if user[5] == 'active' %}background: #d4edda; color: #155724;{% else %}background: #f8d7da; color: #721c24;{% endif %}">
                         {{ user[5] }}
                     </span>
                 </td>
                 <td>{{ user[6] or 'Never' }}</td>
                 <td>
-                    <a href="{{ url_for('change_role', user_id=user[0]) }}" class="btn btn-sm btn-info">Edit Role</a>
+                    <a href="{{ url_for('change_user_role', user_id=user[0]) }}" class="btn btn-sm btn-info">Edit Role</a>
                     <button type="button" class="btn btn-sm btn-danger" onclick="toggleUserStatus({{ user[0] }})">
                         {% if user[5] == 'active' %}Deactivate{% else %}Activate{% endif %}
                     </button>

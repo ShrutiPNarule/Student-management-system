@@ -1,51 +1,314 @@
 {% extends "base.html" %}
 
+{% block title %}Recycle Bin{% endblock %}
+
 {% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">🗑️ Recycle Bin</h2>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-{% if session.get("role") != "auditor" %}
-    <h3 style="color:red;">Unauthorized Access</h3>
-    <p>You do not have permission to view deleted student records.</p>
-    <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
+            <!-- Statistics -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value">{{ deleted_students|length }}</div>
+                    <div class="stat-label">Deleted Students</div>
+                </div>
+                {% if session.get("role") == "superadmin" %}
+                <div class="stat-card">
+                    <div class="stat-value">{{ deleted_users|length }}</div>
+                    <div class="stat-label">Deleted Users</div>
+                </div>
+                {% endif %}
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_deleted }}</div>
+                    <div class="stat-label">Total Deleted Items</div>
+                </div>
+            </div>
 
-{% else %}
+            <!-- Deleted Students Section -->
+            {% if deleted_students %}
+            <div class="section-card">
+                <div class="section-header">Deleted Students ({{ deleted_students|length }})</div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Roll No</th>
+                                <th>College</th>
+                                <th>Phone</th>
+                                <th>Deleted</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in deleted_students %}
+                            <tr>
+                                <td><code>{{ s[0] }}</code></td>
+                                <td>{{ s[1] }}</td>
+                                <td>{{ s[5] }}</td>
+                                <td>{{ s[2] }}</td>
+                                <td>{{ s[3] }}</td>
+                                <td>{{ s[4] }}</td>
+                                <td><small>{{ s[6] }}</small></td>
+                                <td>
+                                    <a href="{{ url_for('restore_student', student_id=s[0]) }}" 
+                                       class="action-btn restore-btn">Restore</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-message">
+                <p>No deleted students in recycle bin</p>
+            </div>
+            {% endif %}
 
-<h2>Recycle Bin – Deleted Students</h2>
+            <!-- Deleted Users Section (Superadmin Only) -->
+            {% if session.get("role") == "superadmin" %}
+                {% if deleted_users %}
+                <div class="section-card">
+                    <div class="section-header">Deleted Users ({{ deleted_users|length }})</div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Role</th>
+                                    <th>Deletion Reason</th>
+                                    <th>Deleted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in deleted_users %}
+                                <tr>
+                                    <td><code>{{ u[0] }}</code></td>
+                                    <td>{{ u[1] }}</td>
+                                    <td>{{ u[2] }}</td>
+                                    <td>{{ u[3] }}</td>
+                                    <td><span class="role-badge">{{ u[4] }}</span></td>
+                                    <td><small>{{ u[6] }}</small></td>
+                                    <td><small>{{ u[5] }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-message">
+                    <p>No deleted users in recycle bin</p>
+                </div>
+                {% endif %}
+            {% endif %}
 
-<a href="{{ url_for('index') }}" class="btn btn-primary">⬅ Back to Active Students</a>
+            <!-- Back Button -->
+            <div class="action-footer">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
 
-{% if deleted_students %}
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Roll No</th>
-            <th>College</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+<style>
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
 
-    <tbody>
-        {% for s in deleted_students %}
-        <tr>
-            <td>{{ s[0] }}</td>
-            <td>{{ s[1] }}</td>
-            <td>{{ s[2] }}</td>
-            <td>{{ s[3] }}</td>
-            <td>{{ s[4] }}</td>
-            <td>{{ s[5] }}</td>
-            <td>
-                <a href="{{ url_for('restore_student', student_id=s[0]) }}" class="btn btn-sm btn-success">↩️ Restore</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No deleted student records found.</p>
-{% endif %}
+    .stat-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
 
-{% endif %}
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #3F4F5F;
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 25px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-header {
+        background-color: #3F4F5F;
+        color: white;
+        padding: 14px 18px;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.3px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        padding: 0;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .data-table thead {
+        background-color: #f8f8f8;
+    }
+
+    .data-table th {
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #ddd;
+        background-color: #f8f8f8;
+    }
+
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        color: #333;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    code {
+        background-color: #f0f0f0;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #333;
+    }
+
+    .role-badge {
+        background-color: #ffe6e6;
+        color: #c41e3a;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .action-btn {
+        padding: 7px 14px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: inline-block;
+        cursor: pointer;
+        border: none;
+    }
+
+    .restore-btn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .restore-btn:hover {
+        background-color: #45a049;
+        text-decoration: none;
+        color: white;
+    }
+
+    .empty-message {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 40px;
+        text-align: center;
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+    .action-footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .btn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary {
+        background-color: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background-color: #d0d0d0;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+
+        .data-table {
+            font-size: 12px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 10px 12px;
+        }
+    }
+</style>
 {% endblock %}

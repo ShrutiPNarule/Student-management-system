@@ -1,0 +1,36 @@
+{
+  "css.lint.validProperties": [
+    "composes"
+  ],
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "css.validate": false,
+  "html.validate.styles": false,
+  "html.validate.scripts": false,
+  "html.validate.content": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/.pytest_cache": true,
+    "**/myenv": true
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python",
+    "editor.formatOnSave": true,
+    "editor.rulers": [88]
+  },
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "html.validate": false,
+  "[jinja2]": {
+    "editor.defaultFormatter": null
+  },
+  "[jinja-html]": {
+    "editor.defaultFormatter": null
+  }
+}
