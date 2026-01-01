@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 
 @app.route("/update-marks/<student_id>", methods=["GET", "POST"])
 def update_marks(student_id):
-    if "user_email" not in session or session.get("role") != "admin":
+    if "user_email" not in session or session.get("role") not in ["clerk", "superadmin"]:
         flash("Unauthorized.", "error")
         return redirect(url_for("index"))
 
@@ -66,7 +66,7 @@ def update_marks(student_id):
 
 @app.route("/attendance/<student_id>", methods=["GET", "POST"])
 def attendance(student_id):
-    if "user_email" not in session or session.get("role") != "admin":
+    if "user_email" not in session or session.get("role") not in ["clerk", "superadmin"]:
         flash("Unauthorized.", "error")
         return redirect(url_for("index"))
 
@@ -184,7 +184,7 @@ def attendance(student_id):
 
 @app.route("/scholarship/<student_id>", methods=["GET", "POST"])
 def scholarship(student_id):
-    if "user_email" not in session or session.get("role") != "admin":
+    if "user_email" not in session or session.get("role") not in ["clerk", "superadmin"]:
         flash("Unauthorized.", "error")
         return redirect(url_for("index"))
 
@@ -246,7 +246,7 @@ def scholarship(student_id):
 
 @app.route("/documents/<student_id>", methods=["GET", "POST"])
 def documents(student_id):
-    if "user_email" not in session or session.get("role") != "admin":
+    if "user_email" not in session or session.get("role") not in ["clerk", "superadmin"]:
         flash("Unauthorized.", "error")
         return redirect(url_for("index"))
 
@@ -347,7 +347,7 @@ def documents(student_id):
 
 @app.route("/download-document/<int:doc_id>", methods=["GET"])
 def download_document(doc_id):
-    if "user_email" not in session or session.get("role") != "admin":
+    if "user_email" not in session or session.get("role") not in ["clerk", "superadmin"]:
         flash("Unauthorized.", "error")
         return redirect(url_for("index"))
 
@@ -389,7 +389,7 @@ def download_document(doc_id):
 
 @app.route("/delete-document/<int:doc_id>", methods=["POST"])
 def delete_document(doc_id):
-    if "user_email" not in session or session.get("role") != "admin":
+    if "user_email" not in session or session.get("role") not in ["clerk", "superadmin"]:
         return {"error": "Unauthorized"}, 403
 
     conn = get_connection()

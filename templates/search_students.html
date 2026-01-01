@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-{% if session.get("role") not in ["admin", "auditor", "superadmin"] %}
+{% if session.get("role") not in ["admin", "auditor", "superadmin", "clerk"] %}
     <h3 style="color:red;">Unauthorized Access</h3>
     <a href="{{ url_for('index') }}" class="btn btn-secondary">Go Back</a>
 
@@ -151,6 +151,9 @@
                     <td>{{ student[11] }}</td>
                     <td>
                         <a href="{{ url_for('student_profile', student_id=student[0]) }}" class="btn btn-sm btn-info">View</a>
+                        {% if session.get("role") in ["admin", "clerk", "superadmin"] %}
+                            <a href="{{ url_for('update_student_data', student_id=student[0]) }}" class="btn btn-sm btn-warning">Edit</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

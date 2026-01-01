@@ -68,7 +68,8 @@ def bulk_approval():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "superadmin":
+    user_role = session.get("role")
+    if user_role not in ["admin", "superadmin"]:
         flash("Unauthorized access.", "error")
         return redirect(url_for("index"))
 
@@ -148,7 +149,8 @@ def request_timeline():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "superadmin":
+    user_role = session.get("role")
+    if user_role not in ["admin", "superadmin"]:
         flash("Unauthorized access.", "error")
         return redirect(url_for("index"))
 

@@ -12,8 +12,8 @@ def bulk_upload_students():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "admin":
-        flash("Only admins can upload students.", "error")
+    if session.get("role") not in ["clerk", "superadmin"]:
+        flash("Only clerks can bulk upload students.", "error")
         return redirect(url_for("index"))
 
     if request.method == "POST":

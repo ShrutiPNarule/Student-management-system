@@ -18,7 +18,7 @@ def add_student():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "admin":
+    if session.get("role") not in ["admin", "clerk"]:
         abort(403)
 
     if request.method == "POST":
@@ -58,8 +58,12 @@ def add_student():
             marks2 = int(request.form.get("marks2") or 0)
             marks3 = int(request.form.get("marks3") or 0)
             marks4 = int(request.form.get("marks4") or 0)
+            marks5 = int(request.form.get("marks5") or 0)
+            marks6 = int(request.form.get("marks6") or 0)
+            marks7 = int(request.form.get("marks7") or 0)
+            marks8 = int(request.form.get("marks8") or 0)
 
-            for m in [marks_10th, marks_12th, marks1, marks2, marks3, marks4]:
+            for m in [marks_10th, marks_12th, marks1, marks2, marks3, marks4, marks5, marks6, marks7, marks8]:
                 if m < 0 or m > 100:
                     raise ValueError
 
@@ -114,13 +118,13 @@ def add_student():
             cur.execute("""
                 INSERT INTO student_marks
                     (student_id, marks_10th, marks_12th,
-                     marks1, marks2, marks3, marks4)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                     marks1, marks2, marks3, marks4, marks5, marks6, marks7, marks8)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 student_id,
                 marks_10th,
                 marks_12th,
-                marks1, marks2, marks3, marks4
+                marks1, marks2, marks3, marks4, marks5, marks6, marks7, marks8
             ))
 
             conn.commit()

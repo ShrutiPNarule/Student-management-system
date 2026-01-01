@@ -18,8 +18,10 @@ def update_student_data(student_id):
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "admin":
-        abort(403)
+    # Clerk can edit (creates approval request) or admin/superadmin can edit directly
+    if session.get("role") not in ["admin", "clerk", "superadmin"]:
+        flash("Unauthorized. Only admin/clerk can edit student information.", "error")
+        return redirect(url_for("index"))
 
     conn = get_connection()
     cur = conn.cursor()
@@ -161,7 +163,11 @@ def update_student_data(student_id):
             # Log the action
             log_action("REQUEST_EDIT", "STUDENT", str(student_id), {"requested_by": admin_id})
             
-            flash("Edit request sent to superadmin for approval. Awaiting response.", "info")
+            # Different message based on user role
+            if session.get("role") == "clerk":
+                flash("Edit request sent to auditor for verification and admin for approval.", "info")
+            else:
+                flash("Edit request sent for approval.", "info")
 
         except psycopg2.Error as e:
             conn.rollback()

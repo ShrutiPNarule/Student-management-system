@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permissions Matrix - All Roles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 18px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1em;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        th:last-child {
+            border-right: none;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.3s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+        
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        td {
+            padding: 16px 18px;
+            text-align: center;
+            font-size: 0.95em;
+        }
+        
+        td:first-child {
+            text-align: left;
+            padding-left: 24px;
+            font-weight: 600;
+            background: #f5f5f5;
+            min-width: 140px;
+        }
+        
+        .role-admin { color: #0066cc; }
+        .role-auditor { color: #ff6b6b; }
+        .role-clerk { color: #00a86b; }
+        .role-student { color: #ff9800; }
+        .role-superadmin { color: #7c3aed; }
+        
+        .yes { color: #10b981; font-size: 1.3em; }
+        .no { color: #ef4444; font-size: 1.2em; opacity: 0.6; }
+        
+        .legend {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+        }
+        
+        .legend h3 {
+            margin-bottom: 16px;
+            color: #333;
+            font-size: 1.2em;
+        }
+        
+        .legend-item {
+            display: inline-block;
+            margin-right: 30px;
+            margin-bottom: 12px;
+        }
+        
+        .legend-symbol {
+            display: inline-block;
+            width: 24px;
+            margin-right: 8px;
+            text-align: center;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .stat-percentage {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .admin { border-left: 4px solid #0066cc; }
+        .auditor { border-left: 4px solid #ff6b6b; }
+        .clerk { border-left: 4px solid #00a86b; }
+        .student { border-left: 4px solid #ff9800; }
+        .superadmin { border-left: 4px solid #7c3aed; }
+        
+        .summary {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .summary h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .role-summary {
+            margin-bottom: 20px;
+            padding: 16px;
+            border-left: 4px solid #ccc;
+            background: #f9f9f9;
+        }
+        
+        .role-summary:last-child {
+            margin-bottom: 0;
+        }
+        
+        .role-summary h4 {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .role-summary p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        .permissions-list {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .can {
+            color: #10b981;
+            margin-right: 15px;
+        }
+        
+        .cannot {
+            color: #ef4444;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+                font-size: 0.85em;
+            }
+            
+            td:first-child {
+                padding-left: 12px;
+                min-width: 100px;
+            }
+            
+            .legend-item {
+                display: block;
+                margin-bottom: 12px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 ALL ROLES WITH PERMISSIONS</h1>
+            <p>Complete permission matrix across all 5 system roles</p>
+        </div>
+        
+        <div class="legend">
+            <h3>📋 Legend</h3>
+            <div class="legend-item">
+                <span class="legend-symbol yes">✅</span>
+                <span>Permission Granted</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-symbol no">❌</span>
+                <span>Permission Denied</span>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card admin">
+                <h4>👨‍💼 Admin</h4>
+                <div class="stat-number">3/8</div>
+                <div class="stat-percentage">37.5% Access</div>
+            </div>
+            <div class="stat-card clerk">
+                <h4>📋 Clerk</h4>
+                <div class="stat-number">5/8</div>
+                <div class="stat-percentage">62.5% Access</div>
+            </div>
+            <div class="stat-card superadmin">
+                <h4>👑 Superadmin</h4>
+                <div class="stat-number">3/8</div>
+                <div class="stat-percentage">37.5% Access</div>
+            </div>
+            <div class="stat-card auditor">
+                <h4>🔍 Auditor</h4>
+                <div class="stat-number">2/8</div>
+                <div class="stat-percentage">25% Access</div>
+            </div>
+            <div class="stat-card student">
+                <h4>👨‍🎓 Student</h4>
+                <div class="stat-number">0/8</div>
+                <div class="stat-percentage">0% Admin Access</div>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th title="Can view student data">View</th>
+                        <th title="Can add new students">Add</th>
+                        <th title="Can delete students">Delete</th>
+                        <th title="Can change user roles">ChgRole</th>
+                        <th title="Can add marks & attendance">Marks</th>
+                        <th title="Can view activity logs">Log</th>
+                        <th title="Can create applications">Create</th>
+                        <th title="Can approve data & applications">Approve</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="role-admin">👨‍💼 Admin</td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="yes">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-auditor">🔍 Auditor</td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-clerk">📋 Clerk</td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-student">👨‍🎓 Student</td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td class="role-superadmin">👑 Superadmin</td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="yes">✅</span></td>
+                        <td><span class="no">❌</span></td>
+                        <td><span class="yes">✅</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="summary">
+            <h3>📝 Detailed Role Summaries</h3>
+            
+            <div class="role-summary admin" style="border-left-color: #0066cc;">
+                <h4>👨‍💼 Admin (3/8 Permissions - 37.5%)</h4>
+                <p><strong>Primary Role:</strong> Review submissions, verify auditor work, make final approval decisions</p>
+                <div class="permissions-list">
+                    <div class="can">✅ Can: View (Reports/Analysis), Log (Activity), Approve (Data)</div>
+                    <div class="cannot">❌ Cannot: Add, Delete, Marks, Change Role, Create</div>
+                </div>
+            </div>
+            
+            <div class="role-summary auditor" style="border-left-color: #ff6b6b;">
+                <h4>🔍 Auditor (2/8 Permissions - 25%)</h4>
+                <p><strong>Primary Role:</strong> Data verification and quality control only</p>
+                <div class="permissions-list">
+                    <div class="can">✅ Can: View, Log</div>
+                    <div class="cannot">❌ Cannot: Add, Delete, Change Role, Marks, Create, Approve</div>
+                </div>
+            </div>
+            
+            <div class="role-summary clerk" style="border-left-color: #00a86b;">
+                <h4>📋 Clerk (5/8 Permissions - 62.5%)</h4>
+                <p><strong>Primary Role:</strong> Data entry support with no approval authority</p>
+                <div class="permissions-list">
+                    <div class="can">✅ Can: View, Add, Delete, Marks, Log</div>
+                    <div class="cannot">❌ Cannot: Change Role, Create, Approve</div>
+                </div>
+            </div>
+            
+            <div class="role-summary superadmin" style="border-left-color: #7c3aed;">
+                <h4>👑 Superadmin (3/8 Permissions - 37.5%)</h4>
+                <p><strong>Primary Role:</strong> System oversight and critical decisions only</p>
+                <div class="permissions-list">
+                    <div class="can">✅ Can: Change Role, Log, Approve</div>
+                    <div class="cannot">❌ Cannot: View, Add, Delete, Marks, Create</div>
+                </div>
+            </div>
+            
+            <div class="role-summary student" style="border-left-color: #ff9800;">
+                <h4>👨‍🎓 Student (0/8 Permissions - 0% Admin Access)</h4>
+                <p><strong>Primary Role:</strong> Self-service personal account management only</p>
+                <div class="permissions-list">
+                    <div class="cannot">❌ Cannot: Access any admin features (View, Add, Delete, Change Role, Marks, Log, Create, Approve)</div>
+                    <div class="can">✅ Can: Register, Change Password, Apply Scholarships, Upload Documents, Mark Attendance</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

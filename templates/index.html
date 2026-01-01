@@ -58,7 +58,7 @@
             <th class="col-college">S7</th>
             <th class="col-college">S8</th>
 
-            {% if session.get("role") == "admin" %}
+            {% if session.get("role") in ["admin", "clerk", "superadmin"] %}
                 <th class="col-always">Actions</th>
             {% endif %}
         </tr>
@@ -85,7 +85,7 @@
             <td class="col-college">{{ s[16] }}</td>
             <td class="col-college">{{ s[17] }}</td>
 
-            {% if session.get("role") == "admin" %}
+            {% if session.get("role") in ["admin", "clerk", "superadmin"] %}
             <td class="col-always actions-cell">
                 <!-- Edit -->
                 <a href="{{ url_for('update_student_data', student_id=s[0]) }}"
@@ -93,35 +93,39 @@
                     Edit
                 </a>
 
-                <!-- Update Marks -->
+                <!-- Update Marks (Only for Clerk and Superadmin) -->
+                {% if session.get("role") in ["clerk", "superadmin"] %}
                 <a href="{{ url_for('update_marks', student_id=s[0]) }}"
                    class="btn btn-info btn-sm">
                     📊 Marks
                 </a>
 
-                <!-- Attendance -->
+                <!-- Attendance (Only for Clerk and Superadmin) -->
                 <a href="{{ url_for('attendance', student_id=s[0]) }}"
                    class="btn btn-success btn-sm">
                     📋 Attendance
                 </a>
 
-                <!-- Scholarship -->
+                <!-- Scholarship (Only for Clerk and Superadmin) -->
                 <a href="{{ url_for('scholarship', student_id=s[0]) }}"
                    class="btn btn-warning btn-sm">
                     🎓 Scholarship
                 </a>
 
-                <!-- Documents -->
+                <!-- Documents (Only for Clerk and Superadmin) -->
                 <a href="{{ url_for('documents', student_id=s[0]) }}"
                    class="btn btn-info btn-sm">
                     📄 Documents
                 </a>
+                {% endif %}
 
-                <!-- Soft Delete -->
+                <!-- Soft Delete (Only for Admin and Superadmin) -->
+                {% if session.get("role") in ["admin", "superadmin"] %}
                 <a href="{{ url_for('delete_student_data', student_id=s[0]) }}"
                    class="btn btn-warning btn-sm">
                     🗑️ Delete
                 </a>
+                {% endif %}
             </td>
             {% endif %}
         </tr>

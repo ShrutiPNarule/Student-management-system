@@ -442,7 +442,8 @@ def approval_audit():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "superadmin":
+    user_role = session.get("role")
+    if user_role not in ["admin", "superadmin"]:
         flash("Unauthorized access.", "error")
         return redirect(url_for("index"))
 
@@ -515,7 +516,8 @@ def activity_report():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "superadmin":
+    user_role = session.get("role")
+    if user_role not in ["admin", "superadmin"]:
         flash("Unauthorized access.", "error")
         return redirect(url_for("index"))
 

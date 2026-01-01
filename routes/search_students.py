@@ -10,7 +10,7 @@ def search_students():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
     
-    if session.get("role") not in ["admin", "auditor", "superadmin"]:
+    if session.get("role") not in ["admin", "auditor", "superadmin", "clerk"]:
         flash("Unauthorized.", "error")
         return redirect(url_for("index"))
     
@@ -94,7 +94,7 @@ def student_profile(student_id):
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
     
-    if session.get("role") not in ["admin", "auditor", "superadmin"]:
+    if session.get("role") not in ["admin", "auditor", "superadmin", "clerk"]:
         flash("Unauthorized.", "error")
         return redirect(url_for("index"))
     

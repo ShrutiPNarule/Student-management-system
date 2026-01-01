@@ -15,6 +15,11 @@ def change_password():
     if "user_email" not in session:
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
+    
+    # Student users cannot change password - system generated only
+    if session.get("role") == "student":
+        flash("Students cannot change their password. Contact your administrator.", "error")
+        return redirect(url_for("index"))
 
     conn = get_connection()
     cur = conn.cursor()

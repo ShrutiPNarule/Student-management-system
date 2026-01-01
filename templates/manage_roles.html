@@ -29,12 +29,13 @@
 
                     <div class="role-change-section">
                         <form method="POST" action="{{ url_for('change_role_superadmin', user_id=user[0]) }}" style="display: inline;">
-                            <select name="new_role" required style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            <select name="new_role" required style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;" title="Select a role with different permissions">
                                 <option value="">-- Select new role --</option>
-                                <option value="student">Student</option>
-                                <option value="admin">Admin</option>
-                                <option value="auditor">Auditor</option>
-                                <option value="superadmin">Superadmin</option>
+                                <option value="student">👨‍🎓 Student (Self-service only)</option>
+                                <option value="admin">👨‍💼 Admin (View, Log, Approve)</option>
+                                <option value="auditor">🔍 Auditor (View, Log)</option>
+                                <option value="clerk">📋 Clerk (View, Add, Delete, Marks, Log)</option>
+                                <option value="superadmin">👑 Superadmin (Change Role, Log, Approve)</option>
                             </select>
                             <button type="submit" class="btn btn-info">🔄 Change Role</button>
                         </form>

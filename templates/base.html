@@ -16,8 +16,8 @@
             <li><a href="{{ url_for('index') }}">Home</a></li>
         {% endif %}
 
-        <!-- Student Search (Admin, Auditor, Superadmin) -->
-        {% if session.get("role") in ["admin", "auditor", "superadmin"] %}
+        <!-- Student Search (Admin, Auditor, Superadmin, Clerk) -->
+        {% if session.get("role") in ["admin", "auditor", "superadmin", "clerk"] %}
             <li><a href="{{ url_for('search_students') }}">🔍 Search</a></li>
         {% endif %}
 
@@ -41,29 +41,28 @@
                         
                         <!-- ADMIN OPTIONS -->
                         {% if session.get("role") == "admin" %}
-                            <a href="{{ url_for('add_student') }}">➕ Add Student</a>
-                            <a href="{{ url_for('bulk_upload_students') }}">📤 Bulk Upload</a>
-                            <hr class="dropdown-divider">
-                        {% endif %}
-
-                        <!-- SUPERADMIN OPTIONS -->
-                        {% if session.get("role") == "superadmin" %}
                             <a href="{{ url_for('view_approvals') }}">📋 Approvals</a>
                             <a href="{{ url_for('bulk_approval') }}">✅ Bulk Approval</a>
                             <a href="{{ url_for('request_timeline') }}">📅 Request History</a>
                             <a href="{{ url_for('approval_audit') }}">📊 Approval Audit</a>
                             <a href="{{ url_for('activity_report') }}">📈 User Activity</a>
-                            <a href="{{ url_for('user_management') }}">👤 User Management</a>
-                            <a href="{{ url_for('account_activation') }}">🔐 Account Activation</a>
-                            <a href="{{ url_for('account_deletion') }}">🗑️ Account Deletion</a>
-                            <a href="{{ url_for('permission_assignment') }}">🔒 Permissions</a>
-                            <a href="{{ url_for('audit_logs') }}">📝 Audit Logs</a>
-                            <a href="{{ url_for('activity_log_viewer') }}">📊 Activity Logs</a>
-                            <a href="{{ url_for('system_health') }}">💪 System Health</a>
-                            <a href="{{ url_for('ip_management') }}">🌐 IP Management</a>
-                            <a href="{{ url_for('session_management') }}">💻 Session Management</a>
-                            <a href="{{ url_for('security_configuration') }}">🔐 Security Config</a>
+                            <hr class="dropdown-divider">
+                        {% endif %}
+
+                        <!-- SUPERADMIN OPTIONS (Critical Rights Only) -->
+                        {% if session.get("role") == "superadmin" %}
+                            <!-- Approval Management (approve_application permission) -->
+                            <a href="{{ url_for('view_approvals') }}">📋 Approvals</a>
+                            <a href="{{ url_for('bulk_approval') }}">✅ Bulk Approval</a>
+                            <a href="{{ url_for('approval_audit') }}">📊 Approval Audit</a>
+                            
+                            <!-- User Role Management (change_user_role permission) -->
                             <a href="{{ url_for('manage_roles') }}">👥 Change Roles</a>
+                            <a href="{{ url_for('user_management') }}">👤 User Management</a>
+                            
+                            <!-- Activity Monitoring (view_activity_log permission) -->
+                            <a href="{{ url_for('activity_report') }}">📈 User Activity</a>
+                            <a href="{{ url_for('audit_logs') }}">📝 Audit Logs</a>
                             <hr class="dropdown-divider">
                         {% endif %}
 
@@ -71,6 +70,14 @@
                         {% if session.get("role") == "auditor" %}
                             <a href="{{ url_for('recycle_bin') }}">🗑️ Recycle Bin</a>
                             <a href="{{ url_for('logs') }}">📝 Activity Logs</a>
+                            <hr class="dropdown-divider">
+                        {% endif %}
+
+                        <!-- CLERK OPTIONS -->
+                        {% if session.get("role") == "clerk" %}
+                            <a href="{{ url_for('search_students') }}">🔍 Search Students</a>
+                            <a href="{{ url_for('add_student') }}">➕ Add Student</a>
+                            <a href="{{ url_for('bulk_upload_students') }}">📤 Bulk Upload</a>
                             <hr class="dropdown-divider">
                         {% endif %}
 

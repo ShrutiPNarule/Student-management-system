@@ -28,7 +28,7 @@ def index():
             ORDER BY id;
         """, (user_email,))
 
-    elif role in ("admin", "auditor", "superadmin"):
+    elif role in ("admin", "auditor", "superadmin", "clerk"):
         cur.execute("""
             SELECT 
                 id, name, roll_no, address, phone, email, college, category,

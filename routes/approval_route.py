@@ -12,16 +12,19 @@ from routes.log_utils import log_action
 
 @app.route("/approvals", methods=["GET"])
 def view_approvals():
-    """Superadmin views pending approval requests"""
+    """Admin/Superadmin views pending approval requests"""
     
     # ---------- AUTH CHECK ----------
     if "user_email" not in session:
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "superadmin":
-        abort(403)
+    user_role = session.get("role")
+    if user_role not in ["admin", "superadmin"]:
+        flash("Unauthorized.", "error")
+        return redirect(url_for("index"))
 
+    print(f"[DEBUG APPROVALS] ALLOWED - Role '{user_role}' is authorized")
     conn = get_connection()
     cur = conn.cursor()
 
@@ -59,15 +62,16 @@ def view_approvals():
 
 @app.route("/approve/<request_id>", methods=["POST"])
 def approve_request(request_id):
-    """Superadmin approves a request"""
+    """Admin/Superadmin approves a request"""
     
     # ---------- AUTH CHECK ----------
     if "user_email" not in session:
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "superadmin":
-        abort(403)
+    if session.get("role") not in ["admin", "superadmin"]:
+        flash("Unauthorized.", "error")
+        return redirect(url_for("index"))
 
     approval_notes = request.form.get("notes", "").strip()
     
@@ -277,15 +281,16 @@ def approve_request(request_id):
 
 @app.route("/reject/<request_id>", methods=["POST"])
 def reject_request(request_id):
-    """Superadmin rejects a request"""
+    """Admin/Superadmin rejects a request"""
     
     # ---------- AUTH CHECK ----------
     if "user_email" not in session:
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") != "superadmin":
-        abort(403)
+    if session.get("role") not in ["admin", "superadmin"]:
+        flash("Unauthorized.", "error")
+        return redirect(url_for("index"))
 
     rejection_reason = request.form.get("notes", "").strip()
     
