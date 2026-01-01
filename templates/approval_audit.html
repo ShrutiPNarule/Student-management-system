@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-{% if session.get("role") == "superadmin" %}
+{% if session.get("role") in ["admin", "superadmin"] %}
 
 <div class="form-card">
     <h2>Approval Audit Report</h2>
