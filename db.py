@@ -45,6 +45,7 @@ cur.execute("CREATE SEQUENCE IF NOT EXISTS school_history_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS college_subject_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS activity_seq START 1;")
 cur.execute("CREATE SEQUENCE IF NOT EXISTS approval_seq START 1;")
+cur.execute("CREATE SEQUENCE IF NOT EXISTS pending_change_seq START 1;")
 
 # =========================
 # MASTER TABLES
@@ -259,6 +260,44 @@ CREATE TABLE IF NOT EXISTS admin_approval_requests (
 """)
 
 # =========================
+# PENDING CHANGES (3-Level Approval Workflow)
+# =========================
+cur.execute("""
+CREATE TABLE IF NOT EXISTS pending_changes (
+    id TEXT PRIMARY KEY DEFAULT
+        'PC' || LPAD(nextval('pending_change_seq')::TEXT, 6, '0'),
+    
+    change_type TEXT NOT NULL,
+    student_id TEXT,
+    
+    data JSONB NOT NULL,
+    original_data JSONB,
+    
+    created_by TEXT NOT NULL REFERENCES users_master(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    status TEXT DEFAULT 'pending',
+    
+    auditor_id TEXT REFERENCES users_master(id) ON DELETE SET NULL,
+    auditor_verified_at TIMESTAMP,
+    auditor_remarks TEXT,
+    
+    admin_id TEXT REFERENCES users_master(id) ON DELETE SET NULL,
+    admin_approved_at TIMESTAMP,
+    admin_remarks TEXT,
+    
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+""")
+
+# Create indices for pending_changes
+cur.execute("CREATE INDEX IF NOT EXISTS idx_pending_status ON pending_changes(status);")
+cur.execute("CREATE INDEX IF NOT EXISTS idx_pending_created_by ON pending_changes(created_by);")
+cur.execute("CREATE INDEX IF NOT EXISTS idx_pending_student ON pending_changes(student_id);")
+cur.execute("CREATE INDEX IF NOT EXISTS idx_pending_auditor ON pending_changes(auditor_id);")
+cur.execute("CREATE INDEX IF NOT EXISTS idx_pending_admin ON pending_changes(admin_id);")
+
+# =========================
 # ACTIVITY LOG
 # =========================
 cur.execute("""
@@ -365,7 +404,7 @@ SELECT
     COALESCE(um.address, '') AS address,
     COALESCE(um.phone, '') AS phone,
     COALESCE(um.email, '') AS email,
-    COALESCE(cc.name, '') AS college,
+    COALESCE(cc.name, um.address, '') AS college,
     COALESCE(um.category, 'General') AS category,
     COALESCE(um.dob::TEXT, '') AS dob,
     COALESCE(sm.current_status, 'Active') AS status,

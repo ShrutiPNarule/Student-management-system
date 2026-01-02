@@ -26,12 +26,6 @@
                 <option value="college">College Marks</option>
             </select>
         </div>
-
-        {% if session.get("role") == "admin" %}
-            <a href="{{ url_for('add_student') }}" class="btn btn-success">
-                + Add New Student
-            </a>
-        {% endif %}
     </div>
 </div>
 

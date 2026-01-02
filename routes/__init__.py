@@ -72,6 +72,8 @@ from .manage_roles_route import *
 # Approvals & Dashboard
 from .approval_route import *
 from .approval_dashboard import *
+from .auditor_verification import *
+from .admin_approval_workflow import *
 
 # Reports & Analytics
 from .reports_route import *

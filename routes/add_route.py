@@ -18,7 +18,9 @@ def add_student():
         flash("Please login to continue.", "error")
         return redirect(url_for("login"))
 
-    if session.get("role") not in ["admin", "clerk"]:
+    # Only clerks can add students
+    if session.get("role") != "clerk":
+        flash("Only clerks are authorized to add students.", "error")
         abort(403)
 
     if request.method == "POST":

@@ -55,7 +55,18 @@ def auditor_pending_changes():
             ORDER BY pc.created_at DESC
         """)
 
-        pending_list = cur.fetchall()
+        raw_pending_list = cur.fetchall()
+        
+        # Parse JSONB data
+        pending_list = []
+        for row in raw_pending_list:
+            row_list = list(row)
+            # Parse data (index 3) and original_data (index 4)
+            if row_list[3]:
+                row_list[3] = json.loads(row_list[3]) if isinstance(row_list[3], str) else row_list[3]
+            if row_list[4]:
+                row_list[4] = json.loads(row_list[4]) if isinstance(row_list[4], str) else row_list[4]
+            pending_list.append(tuple(row_list))
 
         cur.close()
         conn.close()

@@ -3,170 +3,528 @@
 {% block title %}Admin - Approve Changes{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>⚙️ Auditor-Verified Changes - Admin Approval</h2>
-    <p class="text-muted">Review auditor-verified changes and approve to apply to the system</p>
+<style>
+    .approval-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-box {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-box .stat-item {
+        display: inline-block;
+        margin-right: 2rem;
+    }
+    
+    .stats-box .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .change-card {
+        background: white;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .change-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .change-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .change-info {
+        flex: 1;
+    }
+    
+    .change-id {
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .change-type {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-right: 1rem;
+    }
+    
+    .change-meta {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+    }
+    
+    .badge-verified {
+        background: #17a2b8;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+    
+    .change-body {
+        padding: 2rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .info-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 6px;
+    }
+    
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .comparison-column {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .comparison-column.original {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .comparison-column.proposed {
+        border-left: 4px solid #28a745;
+    }
+    
+    .comparison-column.field-names {
+        border-left: 4px solid #667eea;
+    }
+    
+    .col-header {
+        font-weight: bold;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #ddd;
+        text-align: center;
+    }
+    
+    .col-header.original-header {
+        color: #dc3545;
+    }
+    
+    .col-header.proposed-header {
+        color: #28a745;
+    }
+    
+    .col-header.field-header {
+        color: #667eea;
+    }
+    
+    .comp-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 0.9rem;
+    }
+    
+    .comp-item:last-child {
+        border-bottom: none;
+    }
+    
+    .comp-value {
+        word-break: break-all;
+        line-height: 1.4;
+    }
+    
+    .value-old {
+        background: #ffe0e0;
+        padding: 0.4rem;
+        border-radius: 3px;
+        text-decoration: line-through;
+        opacity: 0.8;
+    }
+    
+    .value-new {
+        background: #e0ffe0;
+        padding: 0.4rem;
+        border-radius: 3px;
+        font-weight: 500;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #28a745;
+        color: #28a745;
+    }
+    
+    .data-item {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+        align-items: flex-start;
+    }
+    
+    .data-item:last-child {
+        border-bottom: none;
+    }
+    
+    .data-label {
+        font-weight: 600;
+        color: #333;
+        min-width: 140px;
+        word-break: break-word;
+    }
+    
+    .data-value {
+        flex: 1;
+        color: #555;
+        padding-left: 1rem;
+        word-break: break-all;
+    }
+    
+    .auditor-remarks-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+    
+    .auditor-remarks-box strong {
+        color: #856404;
+    }
+    
+    .decision-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 6px;
+        margin-top: 2rem;
+    }
+    
+    .remarks-input {
+        margin-bottom: 1.5rem;
+    }
+    
+    .decision-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn-approve {
+        flex: 1;
+        padding: 0.75rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 4px;
+        background-color: #28a745;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-approve:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-reject {
+        flex: 1;
+        padding: 0.75rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 4px;
+        background-color: #dc3545;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-reject:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state-text {
+        font-size: 1.2rem;
+        color: #666;
+    }
+    
+    .rejected-section {
+        margin-top: 3rem;
+    }
+    
+    .rejected-table {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .rejected-table table {
+        margin-bottom: 0;
+    }
+    
+    .rejected-table thead {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .rejected-table th {
+        padding: 1rem;
+        font-weight: 600;
+        color: #333;
+        border: none;
+    }
+    
+    .rejected-table td {
+        padding: 1rem;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .rejected-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .back-button {
+        margin-top: 2rem;
+        display: inline-block;
+    }
+</style>
 
+<div class="approval-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>✅ Admin Final Approval Portal</h1>
+        <p style="margin: 0; opacity: 0.9;">Review auditor-verified changes and apply final approval to the system</p>
+    </div>
+
+    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                <div class="alert alert-{{ 'danger' if category == 'error' else 'warning' if category == 'warning' else 'success' }} alert-dismissible fade show" role="alert">
-                    {{ message }}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'warning' if category == 'warning' else 'success' }} alert-dismissible fade show" role="alert" style="margin-bottom: 1.5rem;">
+                    <strong>{{ 'Error!' if category == 'error' else 'Warning!' if category == 'warning' else 'Success!' }}</strong> {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
 
-    <!-- Auditor Verified Section -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h4 class="mb-3">📋 Awaiting Admin Approval</h4>
-            
-            {% if total_pending == 0 %}
-                <div class="alert alert-info">
-                    <i class="fas fa-check-circle"></i> No changes pending approval. Everything is up to date!
-                </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <strong>{{ total_pending }}</strong> change(s) verified by auditor and awaiting your approval
-                </div>
+    <!-- Main Content -->
+    {% if total_pending == 0 %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">✨</div>
+            <div class="empty-state-text">No changes awaiting approval</div>
+            <p style="color: #999; margin-top: 0.5rem;">All auditor-verified changes have been processed!</p>
+        </div>
+    {% else %}
+        <!-- Stats Box -->
+        <div class="stats-box">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_pending }}</div>
+                <div style="color: #666; font-size: 0.9rem;">Changes Awaiting Approval</div>
+            </div>
+        </div>
 
-                {% for change in auditor_verified %}
-                    <div class="card mb-4 border-success">
-                        <div class="card-header bg-success text-white">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <strong>Change #{{ change[0] }}</strong> - {{ change[1] | upper }}
-                                    <small class="d-block text-light">
-                                        Submitted by: {{ change[6] }} | Verified by: {{ change[8] }}
-                                    </small>
-                                    <small class="d-block text-light">
-                                        Created: {{ change[11].strftime('%d %b %Y, %H:%M') }} | 
-                                        Verified: {{ change[9].strftime('%d %b %Y, %H:%M') }}
-                                    </small>
-                                </div>
-                                <div class="col-md-4 text-end">
-                                    <span class="badge bg-success">AUDITOR VERIFIED</span>
-                                </div>
-                            </div>
+        <!-- Change Cards -->
+        {% for change in auditor_verified %}
+            <div class="change-card">
+                <!-- Card Header -->
+                <div class="change-header">
+                    <div class="change-info">
+                        <div class="change-id">Change #{{ change[0] }}</div>
+                        <span class="change-type">{{ change[1].replace('_', ' ').title() }}</span>
+                        <div class="change-meta">
+                            <i class="fas fa-user"></i> Submitted by: {{ change[6] }} | 
+                            <i class="fas fa-check"></i> Verified by: {{ change[8] or 'Unknown' }}
                         </div>
-                        <div class="card-body">
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <h6 class="card-subtitle mb-3"><strong>📝 Proposed Changes:</strong></h6>
-                                    <table class="table table-sm table-bordered">
-                                        <tbody>
-                                            {% for key, value in (change[3] | tojson).items() %}
-                                                <tr>
-                                                    <td class="fw-bold" style="width: 40%;">{{ key | replace('_', ' ') | title }}</td>
-                                                    <td>{{ value }}</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="card-subtitle mb-3"><strong>🔍 Auditor's Review:</strong></h6>
-                                    <div class="alert alert-light">
-                                        <p><strong>Remarks:</strong> {{ change[10] or 'No remarks' }}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr>
-
-                            <h6 class="mt-4"><strong>✅ Admin Decision:</strong></h6>
-                            <form method="POST" action="{{ url_for('admin_approve_change', change_id=change[0]) }}" class="mt-3">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="remarks_{{ change[0] }}" class="form-label">Admin Remarks/Decision:</label>
-                                        <textarea class="form-control" id="remarks_{{ change[0] }}" name="remarks" rows="3" placeholder="Enter your approval decision..."></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <button type="submit" name="action" value="approve" class="btn btn-success w-100">
-                                            <i class="fas fa-check"></i> Approve & Apply to System
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <button type="submit" name="action" value="reject" class="btn btn-danger w-100">
-                                            <i class="fas fa-times"></i> Reject Change
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                        <div class="change-meta" style="margin-top: 0.5rem;">
+                            <i class="fas fa-clock"></i> Created: {{ change[11].strftime('%d %b %Y, %H:%M') }} | 
+                            <i class="fas fa-stamp"></i> Verified: {{ change[9].strftime('%d %b %Y, %H:%M') if change[9] else 'N/A' }}
                         </div>
                     </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Rejected Changes Section -->
-    {% if rejected %}
-        <div class="row">
-            <div class="col-12">
-                <h4 class="mb-3">❌ Recently Rejected Changes</h4>
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Change ID</th>
-                                <th>Type</th>
-                                <th>Submitted By</th>
-                                <th>Status</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reject in rejected %}
-                                <tr>
-                                    <td><small class="badge bg-secondary">{{ reject[0] }}</small></td>
-                                    <td><strong>{{ reject[1] | upper }}</strong></td>
-                                    <td>{{ reject[4] }}</td>
-                                    <td>
-                                        {% if reject[5] == 'rejected_by_auditor' %}
-                                            <span class="badge bg-danger">REJECTED BY AUDITOR</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">REJECTED BY ADMIN</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ reject[6] or reject[7] or 'No remarks' }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="badge-verified">✓ AUDITOR VERIFIED</div>
                 </div>
+
+                <!-- Card Body -->
+                <div class="change-body">
+                    <!-- Data Comparison Section -->
+                    <h5 style="margin-bottom: 1.5rem; color: #333; font-weight: bold;">📊 Data Comparison (Before & After)</h5>
+                    
+                    <div class="comparison-grid">
+                        <!-- Field Names Column -->
+                        <div class="comparison-column field-names">
+                            <div class="col-header field-header">📋 Field Name</div>
+                            {% if change[3] is mapping %}
+                                {% for key in change[3].keys() %}
+                                    <div class="comp-item">
+                                        <strong style="color: #667eea;">{{ key.replace('_', ' ').title() }}</strong>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Original Data Column -->
+                        <div class="comparison-column original">
+                            <div class="col-header original-header">❌ Original Data</div>
+                            {% if change[4] is mapping %}
+                                {% for key in change[3].keys() if change[3] is mapping %}
+                                    <div class="comp-item">
+                                        <span class="comp-value value-old">{{ change[4].get(key, 'N/A') }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="comp-item text-muted"><em>No original data available</em></div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Proposed Data Column -->
+                        <div class="comparison-column proposed">
+                            <div class="col-header proposed-header">✅ New Proposed Value</div>
+                            {% if change[3] is mapping %}
+                                {% for key, value in change[3].items() %}
+                                    <div class="comp-item">
+                                        <span class="comp-value value-new">{{ value }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Auditor's Review -->
+                    <h5 style="margin: 2rem 0 1.5rem 0; color: #333; font-weight: bold;">🔍 Auditor's Verification Summary</h5>
+                    <div class="info-section">
+                        <div class="auditor-remarks-box" style="margin: 0;">
+                            <strong>Auditor Name:</strong> <span style="margin-left: 0.5rem;">{{ change[8] or 'Unknown' }}</span>
+                            <br>
+                            <strong style="display: block; margin-top: 0.75rem;">Auditor Remarks:</strong>
+                            <p style="margin: 0.5rem 0 0 0;">{{ change[10] or '✓ No remarks provided' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Decision Section -->
+                    <div class="decision-section">
+                        <h6 style="margin-bottom: 1.5rem; font-weight: bold; color: #333;">⚖️ Your Final Decision</h6>
+                        <form method="POST" action="{{ url_for('admin_approve_change', change_id=change[0]) }}">
+                            <div class="remarks-input">
+                                <label for="remarks_{{ change[0] }}" class="form-label" style="font-weight: 600; margin-bottom: 0.5rem;">Admin Remarks (Optional)</label>
+                                <textarea class="form-control" id="remarks_{{ change[0] }}" name="remarks" rows="2" placeholder="Enter your decision reasoning..." style="border-radius: 4px; border: 1px solid #ddd;"></textarea>
+                            </div>
+
+                            <div class="decision-buttons">
+                                <button type="submit" name="action" value="approve" class="btn-approve">
+                                    <i class="fas fa-check-circle"></i> Approve & Apply
+                                </button>
+                                <button type="submit" name="action" value="reject" class="btn-reject">
+                                    <i class="fas fa-times-circle"></i> Reject Change
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Recently Rejected Changes Section -->
+    {% if rejected %}
+        <div class="rejected-section">
+            <h3 style="margin-bottom: 1.5rem; color: #333;">❌ Recently Rejected Changes</h3>
+            <div class="rejected-table">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> Change ID</th>
+                            <th><i class="fas fa-exchange-alt"></i> Type</th>
+                            <th><i class="fas fa-user"></i> Submitted By</th>
+                            <th><i class="fas fa-badge"></i> Status</th>
+                            <th><i class="fas fa-comment"></i> Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reject in rejected %}
+                            <tr>
+                                <td><code style="background: #f0f0f0; padding: 0.25rem 0.5rem; border-radius: 3px;">{{ reject[0] }}</code></td>
+                                <td><strong>{{ reject[1].replace('_', ' ').title() }}</strong></td>
+                                <td>{{ reject[4] }}</td>
+                                <td>
+                                    {% if reject[5] == 'rejected_by_auditor' %}
+                                        <span class="badge bg-warning" style="color: #333;">Rejected by Auditor</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rejected by Admin</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ (reject[6] or reject[7] or 'No remarks provided') | truncate(50) }}</small></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     {% endif %}
 
-    <div class="mt-5">
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Dashboard</a>
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary" style="padding: 0.5rem 1.5rem;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
     </div>
 </div>
-
-<style>
-    .card-header {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    }
-    
-    .table-sm td {
-        padding: 0.5rem;
-        font-size: 0.9rem;
-    }
-    
-    .badge {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    
-    .alert-light {
-        background-color: #f8f9fa;
-        border-left: 4px solid #28a745;
-    }
-</style>
 {% endblock %}

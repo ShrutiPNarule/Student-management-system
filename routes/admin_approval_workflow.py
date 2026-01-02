@@ -55,12 +55,23 @@ def admin_pending_approvals():
                 pc.created_at
             FROM pending_changes pc
             JOIN users_master cu ON pc.created_by = cu.id
-            JOIN users_master au ON pc.auditor_id = au.id
+            LEFT JOIN users_master au ON pc.auditor_id = au.id
             WHERE pc.status = 'auditor_verified'
             ORDER BY pc.auditor_verified_at DESC
         """)
 
-        auditor_verified_list = cur.fetchall()
+        raw_auditor_verified = cur.fetchall()
+        
+        # Parse JSONB data
+        auditor_verified_list = []
+        for row in raw_auditor_verified:
+            row_list = list(row)
+            # Parse data (index 3) and original_data (index 4)
+            if row_list[3]:
+                row_list[3] = json.loads(row_list[3]) if isinstance(row_list[3], str) else row_list[3]
+            if row_list[4]:
+                row_list[4] = json.loads(row_list[4]) if isinstance(row_list[4], str) else row_list[4]
+            auditor_verified_list.append(tuple(row_list))
 
         # Also get rejected items for reference
         cur.execute("""
@@ -147,7 +158,12 @@ def admin_approve_change(change_id):
             return redirect(url_for("admin_pending_approvals"))
 
         pc_id, change_type, student_id, change_data_str, created_by = change_result
-        change_data = json.loads(change_data_str)
+        
+        # Handle both dict and string formats (JSONB can come as either)
+        if isinstance(change_data_str, dict):
+            change_data = change_data_str
+        else:
+            change_data = json.loads(change_data_str) if change_data_str else {}
 
         if action == "approve":
             # Apply the change based on type
@@ -219,18 +235,20 @@ def admin_approve_change(change_id):
 
             elif change_type == "edit_student":
                 # Update existing student
-                marks_data = change_data.get("marks", {})
-                
                 cur.execute("""
                     SELECT user_id FROM students_master WHERE id = %s
                 """, (student_id,))
                 user_id_result = cur.fetchone()
                 if user_id_result:
                     user_id = user_id_result[0]
+                    college = change_data.get("college", "")
+                    
+                    # Update users_master
                     cur.execute("""
                         UPDATE users_master
                         SET name = %s,
                             phone = %s,
+                            email = %s,
                             address = %s,
                             dob = %s,
                             category = %s,
@@ -240,42 +258,88 @@ def admin_approve_change(change_id):
                     """, (
                         change_data.get("name"),
                         change_data.get("phone"),
-                        change_data.get("college"),
+                        change_data.get("email"),
+                        change_data.get("college"),  # Store college in address for now
                         change_data.get("dob"),
                         change_data.get("category"),
                         change_data.get("birth_place"),
                         user_id
                     ))
+                    
+                    # Update students_master with enrollment_no
+                    cur.execute("""
+                        UPDATE students_master
+                        SET enrollment_no = %s,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (change_data.get("enrollment_no"), student_id))
 
-                    # Update marks
-                    if marks_data:
+                    # Update marks - handle all semester marks
+                    marks_data = {
+                        "marks_10th": change_data.get("marks_10th", 0),
+                        "marks_12th": change_data.get("marks_12th", 0),
+                        "marks1": change_data.get("marks1", 0),
+                        "marks2": change_data.get("marks2", 0),
+                        "marks3": change_data.get("marks3", 0),
+                        "marks4": change_data.get("marks4", 0),
+                        "marks5": change_data.get("marks5", 0),
+                        "marks6": change_data.get("marks6", 0),
+                        "marks7": change_data.get("marks7", 0),
+                        "marks8": change_data.get("marks8", 0),
+                    }
+                    
+                    # Update student_marks
+                    cur.execute("""
+                        UPDATE student_marks
+                        SET marks_10th = %s,
+                            marks_12th = %s,
+                            marks1 = %s,
+                            marks2 = %s,
+                            marks3 = %s,
+                            marks4 = %s,
+                            marks5 = %s,
+                            marks6 = %s,
+                            marks7 = %s,
+                            marks8 = %s,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE student_id = %s
+                    """, (
+                        change_data.get("marks_10th", 0),
+                        change_data.get("marks_12th", 0),
+                        change_data.get("marks1", 0),
+                        change_data.get("marks2", 0),
+                        change_data.get("marks3", 0),
+                        change_data.get("marks4", 0),
+                        change_data.get("marks5", 0),
+                        change_data.get("marks6", 0),
+                        change_data.get("marks7", 0),
+                        change_data.get("marks8", 0),
+                        student_id
+                    ))
+                    
+                    print(f"[ADMIN APPROVAL] Marks update affected {cur.rowcount} rows for student {student_id}")
+                    
+                    # Check if any rows were affected, if not insert
+                    if cur.rowcount == 0:
+                        print(f"[ADMIN APPROVAL] No marks record found, creating new one")
                         cur.execute("""
-                            UPDATE student_marks
-                            SET marks_10th = %s,
-                                marks_12th = %s,
-                                marks1 = %s,
-                                marks2 = %s,
-                                marks3 = %s,
-                                marks4 = %s,
-                                marks5 = %s,
-                                marks6 = %s,
-                                marks7 = %s,
-                                marks8 = %s,
-                                updated_at = CURRENT_TIMESTAMP
-                            WHERE student_id = %s
+                            INSERT INTO student_marks 
+                            (student_id, marks_10th, marks_12th, marks1, marks2, marks3, marks4, marks5, marks6, marks7, marks8)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """, (
-                            marks_data.get("marks_10th", 0),
-                            marks_data.get("marks_12th", 0),
-                            marks_data.get("marks1", 0),
-                            marks_data.get("marks2", 0),
-                            marks_data.get("marks3", 0),
-                            marks_data.get("marks4", 0),
-                            marks_data.get("marks5", 0),
-                            marks_data.get("marks6", 0),
-                            marks_data.get("marks7", 0),
-                            marks_data.get("marks8", 0),
-                            student_id
+                            student_id,
+                            change_data.get("marks_10th", 0),
+                            change_data.get("marks_12th", 0),
+                            change_data.get("marks1", 0),
+                            change_data.get("marks2", 0),
+                            change_data.get("marks3", 0),
+                            change_data.get("marks4", 0),
+                            change_data.get("marks5", 0),
+                            change_data.get("marks6", 0),
+                            change_data.get("marks7", 0),
+                            change_data.get("marks8", 0)
                         ))
+                        print(f"[ADMIN APPROVAL] Created new marks record")
 
             # Mark change as completed
             cur.execute("""

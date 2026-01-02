@@ -41,10 +41,8 @@
                         
                         <!-- ADMIN OPTIONS -->
                         {% if session.get("role") == "admin" %}
-                            <a href="{{ url_for('view_approvals') }}">📋 Approvals</a>
-                            <a href="{{ url_for('bulk_approval') }}">✅ Bulk Approval</a>
+                            <a href="{{ url_for('admin_pending_approvals') }}">✅ Approve Changes (3-Level Workflow)</a>
                             <a href="{{ url_for('request_timeline') }}">📅 Request History</a>
-                            <a href="{{ url_for('approval_audit') }}">📊 Approval Audit</a>
                             <a href="{{ url_for('activity_report') }}">📈 User Activity</a>
                             <hr class="dropdown-divider">
                         {% endif %}
@@ -52,9 +50,7 @@
                         <!-- SUPERADMIN OPTIONS (Critical Rights Only) -->
                         {% if session.get("role") == "superadmin" %}
                             <!-- Approval Management (approve_application permission) -->
-                            <a href="{{ url_for('view_approvals') }}">📋 Approvals</a>
-                            <a href="{{ url_for('bulk_approval') }}">✅ Bulk Approval</a>
-                            <a href="{{ url_for('approval_audit') }}">📊 Approval Audit</a>
+                            <a href="{{ url_for('admin_pending_approvals') }}">✅ Approve Changes (3-Level Workflow)</a>
                             
                             <!-- User Role Management (change_user_role permission) -->
                             <a href="{{ url_for('manage_roles') }}">👥 Change Roles</a>
@@ -68,6 +64,7 @@
 
                         <!-- AUDITOR OPTIONS -->
                         {% if session.get("role") == "auditor" %}
+                            <a href="{{ url_for('auditor_pending_changes') }}">✅ Verify Changes</a>
                             <a href="{{ url_for('recycle_bin') }}">🗑️ Recycle Bin</a>
                             <a href="{{ url_for('logs') }}">📝 Activity Logs</a>
                             <hr class="dropdown-divider">

@@ -114,18 +114,18 @@ def update_student_data(student_id):
                 flash("Email already exists for another user.", "error")
                 return redirect(url_for("update_student_data", student_id=student_id))
 
-            # Get admin's user ID
+            # Get current user's ID
             cur.execute("SELECT id FROM users_master WHERE email = %s", (session["user_email"],))
-            admin_result = cur.fetchone()
-            if not admin_result:
-                flash("Admin user not found.", "error")
+            user_result = cur.fetchone()
+            if not user_result:
+                flash("User not found.", "error")
                 conn.rollback()
                 return redirect(url_for("index"))
             
-            admin_id = admin_result[0]
+            user_id = user_result[0]
 
-            # Prepare action data
-            action_data = {
+            # Prepare new data
+            new_data = {
                 "name": name,
                 "enrollment_no": roll_no,
                 "college": college,
@@ -146,28 +146,63 @@ def update_student_data(student_id):
                 "marks8": marks8
             }
 
-            print(f"[EDIT REQUEST] Creating approval request for student {student_id}")
-            print(f"[EDIT REQUEST] Admin ID: {admin_id}")
-            print(f"[EDIT REQUEST] Action data: {action_data}")
-            
-            # Create approval request instead of directly updating
+            # Get original data for backup
             cur.execute("""
-                INSERT INTO admin_approval_requests 
-                (admin_id, request_type, entity_type, entity_id, action_data, status)
+                SELECT 
+                    u.name, s.enrollment_no, u.email, u.phone, u.dob, u.birth_place, u.category,
+                    m.marks_10th, m.marks_12th, m.marks1, m.marks2, m.marks3, m.marks4,
+                    m.marks5, m.marks6, m.marks7, m.marks8
+                FROM students_master s
+                LEFT JOIN users_master u ON s.user_id = u.id
+                LEFT JOIN student_marks m ON s.id = m.student_id
+                WHERE s.id = %s
+            """, (student_id,))
+            original = cur.fetchone()
+            
+            original_data = {}
+            if original:
+                original_data = {
+                    "name": original[0],
+                    "enrollment_no": original[1],
+                    "email": original[2],
+                    "phone": original[3],
+                    "dob": str(original[4]) if original[4] else None,
+                    "birth_place": original[5],
+                    "category": original[6],
+                    "marks_10th": original[7],
+                    "marks_12th": original[8],
+                    "marks1": original[9],
+                    "marks2": original[10],
+                    "marks3": original[11],
+                    "marks4": original[12],
+                    "marks5": original[13],
+                    "marks6": original[14],
+                    "marks7": original[15],
+                    "marks8": original[16]
+                }
+
+            print(f"[EDIT REQUEST] Creating pending change request for student {student_id}")
+            print(f"[EDIT REQUEST] User ID: {user_id}")
+            print(f"[EDIT REQUEST] New data: {new_data}")
+            
+            # Insert into pending_changes table with 'pending' status
+            cur.execute("""
+                INSERT INTO pending_changes 
+                (change_type, student_id, data, original_data, created_by, status)
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (admin_id, "EDIT", "STUDENT", student_id, json.dumps(action_data), "pending"))
+            """, ("edit_student", student_id, json.dumps(new_data), json.dumps(original_data), user_id, "pending"))
 
             conn.commit()
-            print(f"[EDIT REQUEST] Approval request created successfully for student {student_id}")
+            print(f"[EDIT REQUEST] Pending change created successfully for student {student_id}")
             
             # Log the action
-            log_action("REQUEST_EDIT", "STUDENT", str(student_id), {"requested_by": admin_id})
+            log_action("REQUEST_EDIT", "STUDENT", str(student_id), {"requested_by": user_id})
             
             # Different message based on user role
             if session.get("role") == "clerk":
                 flash("Edit request sent to auditor for verification and admin for approval.", "info")
             else:
-                flash("Edit request sent for approval.", "info")
+                flash("Edit request sent for verification and approval.", "info")
 
         except psycopg2.Error as e:
             conn.rollback()
